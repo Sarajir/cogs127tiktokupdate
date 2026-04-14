@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>抖音</title>
+  <title>Short Video Demo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -519,35 +519,35 @@
     <!-- ══════════ SCREEN 0: Main Feed ══════════ -->
     <div class="screen" id="screen0">
       <!-- swipe hint (right edge → go to secondary) -->
-      <div class="swipe-hint right-hint" id="hint0">同款视频 →</div>
+      <div class="swipe-hint right-hint" id="hint0">Related →</div>
 
       <div class="top-nav">
-        <div class="live-btn">直播</div>
-        <div class="tab" onclick="switchTab(this)">关注</div>
-        <div class="tab active" onclick="switchTab(this)">推荐</div>
-        <div class="tab" onclick="switchTab(this)">朋友</div>
-        <div class="search-icon" onclick="alert('搜索功能')">🔍</div>
+        <div class="live-btn">LIVE</div>
+        <div class="tab" onclick="switchTab(this)">Following</div>
+        <div class="tab active" onclick="switchTab(this)">For You</div>
+        <div class="tab" onclick="switchTab(this)">Friends</div>
+        <div class="search-icon" onclick="alert('Search')">🔍</div>
       </div>
 
       <div class="feed" id="feed0"></div>
 
       <div class="bottom-nav">
         <div class="nav-item active" onclick="switchNav(this)">
-          <div class="nav-icon">🏠</div><div class="nav-label">首页</div>
+          <div class="nav-icon">🏠</div><div class="nav-label">Home</div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">🔍</div><div class="nav-label">搜索</div>
+          <div class="nav-icon">🔍</div><div class="nav-label">Explore</div>
         </div>
         <div class="nav-item">
-          <div class="post-btn" onclick="alert('发布视频')">
+          <div class="post-btn" onclick="alert('Create post')">
             <div class="post-inner">＋</div>
           </div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">💬</div><div class="nav-label">消息</div>
+          <div class="nav-icon">💬</div><div class="nav-label">Inbox</div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">👤</div><div class="nav-label">我</div>
+          <div class="nav-icon">👤</div><div class="nav-label">Profile</div>
         </div>
       </div>
     </div>
@@ -555,11 +555,11 @@
     <!-- ══════════ SCREEN 1: Secondary Feed ══════════ -->
     <div class="screen" id="screen1">
       <!-- swipe hint (left edge → go back) -->
-      <div class="swipe-hint left-hint" id="hint1">← 返回推荐</div>
+      <div class="swipe-hint left-hint" id="hint1">← For You</div>
 
       <div class="sec-top-nav">
-        <div class="sec-back-btn" onclick="goToScreen(0)">‹ 推荐</div>
-        <div class="sec-title">同款视频</div>
+        <div class="sec-back-btn" onclick="goToScreen(0)">‹ For You</div>
+        <div class="sec-title">Related</div>
         <div class="sec-more">⋯</div>
       </div>
 
@@ -567,21 +567,21 @@
 
       <div class="bottom-nav">
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">🏠</div><div class="nav-label">首页</div>
+          <div class="nav-icon">🏠</div><div class="nav-label">Home</div>
         </div>
         <div class="nav-item active" onclick="switchNav(this)">
-          <div class="nav-icon">🔍</div><div class="nav-label">搜索</div>
+          <div class="nav-icon">🔍</div><div class="nav-label">Explore</div>
         </div>
         <div class="nav-item">
-          <div class="post-btn" onclick="alert('发布视频')">
+          <div class="post-btn" onclick="alert('Create post')">
             <div class="post-inner">＋</div>
           </div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">💬</div><div class="nav-label">消息</div>
+          <div class="nav-icon">💬</div><div class="nav-label">Inbox</div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">👤</div><div class="nav-label">我</div>
+          <div class="nav-icon">👤</div><div class="nav-label">Profile</div>
         </div>
       </div>
     </div>
@@ -592,14 +592,14 @@
   <div class="overlay-bg" id="overlayBg" onclick="closeComments()"></div>
   <div class="comments-sheet" id="commentsSheet">
     <div class="sheet-header">
-      <div class="sheet-title" id="commentCount">评论 128</div>
+      <div class="sheet-title" id="commentCount">Comments 128</div>
       <div class="sheet-close" onclick="closeComments()">✕</div>
     </div>
-    <div class="sheet-swipe-row" id="sheetSwipeHint">← 左滑进入全屏「评论视频」流</div>
+    <div class="sheet-swipe-row" id="sheetSwipeHint">← Swipe left for fullscreen comment videos</div>
     <div class="comments-list" id="commentsList"></div>
     <div class="sheet-input">
-      <div class="upload-video-btn" id="uploadVideoBtn" onclick="triggerVideoUpload()" title="上传视频评论">📹</div>
-      <input type="text" id="commentInput" placeholder="留下你的神评，或上传视频 📹" />
+      <div class="upload-video-btn" id="uploadVideoBtn" onclick="triggerVideoUpload()" title="Upload video comment">📹</div>
+      <input type="text" id="commentInput" placeholder="Write a comment or upload a video 📹" />
       <div class="send-btn" onclick="sendComment()">➤</div>
     </div>
   </div>
@@ -610,35 +610,35 @@
   <!-- Video preview modal -->
   <div class="video-preview-modal" id="videoPreviewModal">
     <div class="video-preview-card">
-      <div class="preview-title">视频评论预览</div>
+      <div class="preview-title">Video comment preview</div>
       <div class="preview-video-wrap">
         <video id="previewVideo" controls playsinline></video>
       </div>
-      <input class="preview-caption-input" id="previewCaption" placeholder="给视频加个说明…（选填）" />
+      <input class="preview-caption-input" id="previewCaption" placeholder="Add a caption (optional)" />
       <div class="preview-actions">
-        <div class="preview-cancel" onclick="cancelVideoUpload()">取消</div>
-        <div class="preview-send" onclick="confirmVideoUpload()">发布视频评论</div>
+        <div class="preview-cancel" onclick="cancelVideoUpload()">Cancel</div>
+        <div class="preview-send" onclick="confirmVideoUpload()">Post video comment</div>
       </div>
     </div>
   </div>
 
   <!-- Fullscreen feed: ONLY video comments from current thread (no algorithm) -->
   <div id="commentVideoFeedLayer">
-    <div class="cv-swipe-hint" id="cvSwipeHint">← 右滑返回评论</div>
+    <div class="cv-swipe-hint" id="cvSwipeHint">← Swipe right for comments</div>
     <div class="top-nav" style="padding-top:44px;">
-      <div class="live-btn" onclick="closeCommentVideoFeed()">返回</div>
-      <div class="tab" onclick="void(0)">关注</div>
-      <div class="tab active" onclick="void(0)">评论视频</div>
-      <div class="tab" onclick="void(0)">朋友</div>
-      <div class="search-icon" onclick="alert('仅展示本帖评论区的视频投稿')">ℹ️</div>
+      <div class="live-btn" onclick="closeCommentVideoFeed()">Back</div>
+      <div class="tab" onclick="void(0)">Following</div>
+      <div class="tab active" onclick="void(0)">Comment videos</div>
+      <div class="tab" onclick="void(0)">Friends</div>
+      <div class="search-icon" onclick="alert('Only video uploads from this post’s comments')">ℹ️</div>
     </div>
     <div class="feed" id="commentVideoFeed"></div>
     <div class="bottom-nav">
       <div class="nav-item active" onclick="switchNav(this)">
-        <div class="nav-icon">💬</div><div class="nav-label">评论视频</div>
+        <div class="nav-icon">💬</div><div class="nav-label">Comment videos</div>
       </div>
       <div class="nav-item" onclick="switchNav(this)">
-        <div class="nav-icon">🔍</div><div class="nav-label">搜索</div>
+        <div class="nav-icon">🔍</div><div class="nav-label">Explore</div>
       </div>
       <div class="nav-item">
         <div class="post-btn" onclick="closeCommentVideoFeed(); triggerVideoUpload();">
@@ -646,10 +646,10 @@
         </div>
       </div>
       <div class="nav-item" onclick="switchNav(this)">
-        <div class="nav-icon">📹</div><div class="nav-label">投稿</div>
+        <div class="nav-icon">📹</div><div class="nav-label">Upload</div>
       </div>
       <div class="nav-item" onclick="switchNav(this)">
-        <div class="nav-icon">👤</div><div class="nav-label">我</div>
+        <div class="nav-icon">👤</div><div class="nav-label">Profile</div>
       </div>
     </div>
   </div>
@@ -663,56 +663,56 @@
 const mainVideos = [
   { id:'m1', bg:'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)', emoji:'🌊',
     user:'@ocean_vibes', avatar:'🌊', avatarBg:'linear-gradient(135deg,#667eea,#764ba2)',
-    desc:'深夜的海浪声让人无比治愈 🌙 #深夜情绪 #海边', music:'《海浪》- 纯音乐',
-    likes:'32.4w', comments:4218, shares:'1.2w' },
+    desc:'Late-night waves are so healing 🌙 #nightvibes #ocean', music:'Waves — ambient',
+    likes:'324k', comments:4218, shares:'12k' },
   { id:'m2', bg:'linear-gradient(135deg,#f093fb,#f5576c,#4facfe)', emoji:'🌸',
     user:'@sakura_daily', avatar:'🌸', avatarBg:'linear-gradient(135deg,#f093fb,#f5576c)',
-    desc:'京都的樱花季到了，每年都来一次📷✨ #日本旅行 #樱花', music:'《春日》- 山田太郎',
-    likes:'88.1w', comments:9832, shares:'5.6w' },
+    desc:'Kyoto cherry season — I come every year 📷✨ #japan #sakura', music:'Spring Day — indie',
+    likes:'881k', comments:9832, shares:'56k' },
   { id:'m3', bg:'linear-gradient(135deg,#43e97b,#38f9d7)', emoji:'🍜',
     user:'@foodie_life', avatar:'🍜', avatarBg:'linear-gradient(135deg,#43e97b,#38f9d7)',
-    desc:'自制兰州拉面，劲道十足！附完整食谱👇 #美食 #家常菜', music:'《烟火人间》- 赵雷',
-    likes:'21.7w', comments:3301, shares:'8.9w' },
+    desc:'Hand-pulled noodles at home — full recipe below 👇 #food #cooking', music:'Street Food — folk',
+    likes:'217k', comments:3301, shares:'89k' },
   { id:'m4', bg:'linear-gradient(135deg,#fa709a,#fee140)', emoji:'🐱',
     user:'@catworld_zzz', avatar:'🐱', avatarBg:'linear-gradient(135deg,#fa709a,#fee140)',
-    desc:'橘猫发现了我的零食🍪😂 这表情绝了 #猫咪日常 #橘猫', music:'《喵喵喵》- 奶猫乐队',
-    likes:'156w', comments:24100, shares:'12w' },
+    desc:'My orange cat found the snacks 🍪😂 #cats #orangecat', music:'Meow Mix — parody',
+    likes:'1.56M', comments:24100, shares:'120k' },
   { id:'m5', bg:'linear-gradient(135deg,#4facfe,#00f2fe)', emoji:'🏔️',
     user:'@mountain_trek', avatar:'🏔️', avatarBg:'linear-gradient(135deg,#4facfe,#00f2fe)',
-    desc:'海拔4800米，云在脚下，心在天上⛰️🌤️ #登山 #西藏', music:'《世界》- 五月天',
-    likes:'45.3w', comments:6723, shares:'3.4w' },
+    desc:'4800m — clouds under my feet ⛰️🌤️ #hiking #tibet', music:'The World — rock',
+    likes:'453k', comments:6723, shares:'34k' },
 ];
 
 const secondaryVideos = [
   { id:'s1', bg:'linear-gradient(135deg,#f7971e,#ffd200)', emoji:'🎸',
     user:'@rock_night', avatar:'🎸', avatarBg:'linear-gradient(135deg,#f7971e,#ffd200)',
-    desc:'同款BGM！谁还没听过这首神曲 🎵🔥 #音乐 #摇滚', music:'《夜曲》- 周杰伦',
-    likes:'19.2w', comments:2311, shares:'7.1w' },
+    desc:'Same vibe BGM — you need this track 🎵🔥 #music #rock', music:'Nocturne — cover',
+    likes:'192k', comments:2311, shares:'71k' },
   { id:'s2', bg:'linear-gradient(135deg,#30cfd0,#330867)', emoji:'🌌',
     user:'@space_explorer', avatar:'🌌', avatarBg:'linear-gradient(135deg,#30cfd0,#330867)',
-    desc:'模拟星空下的露营，太美了！ #露营 #星空 #自然', music:'《星辰大海》- 黄霄雲',
-    likes:'63.8w', comments:8820, shares:'4.5w' },
+    desc:'Camping under a fake galaxy — stunning #camping #stars', music:'Stardust — pop',
+    likes:'638k', comments:8820, shares:'45k' },
   { id:'s3', bg:'linear-gradient(135deg,#ee0979,#ff6a00)', emoji:'🦊',
     user:'@urban_fox', avatar:'🦊', avatarBg:'linear-gradient(135deg,#ee0979,#ff6a00)',
-    desc:'城市街拍，每个转角都是故事 📸 #街拍 #城市', music:'《遇见》- 孙燕姿',
-    likes:'27.5w', comments:5104, shares:'2.3w' },
+    desc:'City street shots — every corner has a story 📸 #street #urban', music:'Serendipity — acoustic',
+    likes:'275k', comments:5104, shares:'23k' },
   { id:'s4', bg:'linear-gradient(135deg,#11998e,#38ef7d)', emoji:'🏄',
     user:'@surf_dude', avatar:'🏄', avatarBg:'linear-gradient(135deg,#11998e,#38ef7d)',
-    desc:'巴厘岛冲浪日记，浪没有等人的🌊🤙 #冲浪 #旅行', music:'《海阔天空》- Beyond',
-    likes:'41.0w', comments:7230, shares:'9.9w' },
+    desc:'Bali surf diary — the wave won’t wait 🌊🤙 #surf #travel', music:'Oceans — rock',
+    likes:'410k', comments:7230, shares:'99k' },
   { id:'s5', bg:'linear-gradient(135deg,#fc5c7d,#6a3093)', emoji:'🎨',
     user:'@art_studio_99', avatar:'🎨', avatarBg:'linear-gradient(135deg,#fc5c7d,#6a3093)',
-    desc:'30秒快速绘画挑战，结果震惊了😳 #绘画 #艺术', music:'《晴天》- 周杰伦',
-    likes:'55.6w', comments:11200, shares:'6.8w' },
+    desc:'30-second speed paint — I’m shook 😳 #art #drawing', music:'Sunny Day — pop',
+    likes:'556k', comments:11200, shares:'68k' },
 ];
 
 const sampleComments = [
-  { avatar:'😂', name:'开心每一天', text:'哈哈哈哈哈哈哈太真实了', time:'3小时前', likes:'1.2k' },
-  { avatar:'🌟', name:'星光侠侠', text:'这也太好看了吧！求同款！', time:'5小时前', likes:'892' },
-  { avatar:'🐼', name:'熊猫本猫', text:'路过点个赞，希望你每天都开心😊', time:'8小时前', likes:'456' },
-  { avatar:'🦋', name:'蝴蝶效应qwq', text:'我妈看到这个视频哭了，说想起了很多事', time:'昨天', likes:'3.4k' },
-  { avatar:'🎵', name:'音乐小怪兽', text:'这首歌真的绝了，单曲循环两小时', time:'昨天', likes:'278' },
-  { avatar:'🌈', name:'彩虹追梦人', text:'已分享给好友，大家都说美！', time:'2天前', likes:'190' },
+  { avatar:'😂', name:'HappyDaily', text:'LOL this is so real', time:'3h ago', likes:'1.2k' },
+  { avatar:'🌟', name:'StarLight', text:'This is gorgeous — need the same setup!', time:'5h ago', likes:'892' },
+  { avatar:'🐼', name:'PandaMode', text:'Dropping a like — have a great day 😊', time:'8h ago', likes:'456' },
+  { avatar:'🦋', name:'ButterflyFX', text:'My mom cried watching this, said it reminded her of a lot', time:'Yesterday', likes:'3.4k' },
+  { avatar:'🎵', name:'MusicNerd', text:'This song is on repeat for two hours straight', time:'Yesterday', likes:'278' },
+  { avatar:'🌈', name:'RainbowRun', text:'Shared with friends — everyone loved it!', time:'2d ago', likes:'190' },
 ];
 
 /* live comment list per card */
@@ -791,8 +791,8 @@ function buildDesc(d) {
   return d.replace(/#(\S+)/g, '<span>#$1</span>');
 }
 function fmtNum(n) {
-  if (n >= 10000) return (n/10000).toFixed(1)+'w';
-  if (n >= 1000)  return (n/1000).toFixed(1)+'k';
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
   return n;
 }
 
@@ -937,7 +937,7 @@ function toggleFollow(btn, e) {
 
 function shareVideo(e) {
   e.stopPropagation();
-  alert('分享到：\n微信 · 朋友圈 · QQ · 微博 · 复制链接');
+  alert('Share to:\nMessages · Stories · More · Copy link');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -948,7 +948,7 @@ function openComments(videoId, count, e) {
   currentCardId = videoId;
   document.getElementById('commentsSheet').classList.remove('on-top-of-cvfeed');
   document.getElementById('overlayBg').classList.remove('on-top-of-cvfeed');
-  document.getElementById('commentCount').textContent = `评论 ${fmtNum(count)}`;
+  document.getElementById('commentCount').textContent = `Comments ${fmtNum(count)}`;
   renderComments();
   document.getElementById('commentsSheet').classList.add('open');
   document.getElementById('overlayBg').classList.add('show');
@@ -987,9 +987,9 @@ function buildCommentVideoFeed() {
     empty.innerHTML = `
       <div class="cv-empty-placeholder">
         <div class="big">📹</div>
-        <h2>暂无视频评论</h2>
-        <p>这里只会出现<strong>本帖评论区</strong>里大家上传的视频，<br>不会混入推荐算法内容。</p>
-        <p>返回评论 → 点 📹 上传一条视频评论后再来左滑。</p>
+        <h2>No video comments yet</h2>
+        <p>Only <strong>videos uploaded in this post’s comments</strong> appear here —<br>no For You algorithm content.</p>
+        <p>Go back to comments → tap 📹 to upload a video comment, then swipe left again.</p>
       </div>`;
     feed.appendChild(empty);
     return;
@@ -1004,7 +1004,7 @@ function buildCommentVideoFeed() {
     card.className = 'video-card';
     card.dataset.cvId = cvId;
     const cap = escapeHtml(c.caption || '');
-    const who = escapeHtml(c.displayUser || '我');
+    const who = escapeHtml(c.displayUser || 'Me');
     card.innerHTML = `
       <div class="video-bg">
         <video class="video-fill" src="${c.videoSrc}" playsinline loop controls preload="metadata"></video>
@@ -1029,10 +1029,10 @@ function buildCommentVideoFeed() {
         <div class="action-btn"><div class="vinyl">🎵</div></div>
       </div>
       <div class="video-info">
-        <div class="cv-feed-badge">评论视频 · 非推荐流</div>
+        <div class="cv-feed-badge">Comment videos · not For You</div>
         <div class="user-name">${who}</div>
-        <div class="video-desc">${cap || '<span>（无配文）</span>'}</div>
-        <div class="music-row"><span class="note">♪</span><span>来自评论区投稿</span></div>
+        <div class="video-desc">${cap || '<span>No caption</span>'}</div>
+        <div class="music-row"><span class="note">♪</span><span>From comment uploads</span></div>
       </div>`;
 
     let lastTap = 0;
@@ -1068,7 +1068,7 @@ function closeCommentVideoFeed() {
     currentCardId = commentVideoParentId;
     const mv = mainVideos.find(x => x.id === commentVideoParentId);
     const count = mv ? mv.comments : 0;
-    document.getElementById('commentCount').textContent = `评论 ${fmtNum(count)}`;
+    document.getElementById('commentCount').textContent = `Comments ${fmtNum(count)}`;
     renderComments();
     document.getElementById('commentsSheet').classList.add('open');
     document.getElementById('overlayBg').classList.add('show');
@@ -1080,7 +1080,7 @@ function openNestedComments(cvId, e) {
   e.stopPropagation();
   currentCardId = '__cv__' + cvId;
   if (!commentStore[currentCardId]) commentStore[currentCardId] = [];
-  document.getElementById('commentCount').textContent = '评论 0';
+  document.getElementById('commentCount').textContent = 'Comments 0';
   renderComments();
   document.getElementById('commentsSheet').classList.add('open', 'on-top-of-cvfeed');
   document.getElementById('overlayBg').classList.add('show', 'on-top-of-cvfeed');
@@ -1092,7 +1092,7 @@ function renderComments() {
   list.innerHTML = comments.map(c => {
     if (c.type === 'video') {
       const cap = c.caption ? escapeHtml(c.caption) : '';
-      const who = escapeHtml(c.displayUser || '我');
+      const who = escapeHtml(c.displayUser || 'Me');
       return `
         <div class="comment-item">
           <div class="comment-avatar">😊</div>
@@ -1101,7 +1101,7 @@ function renderComments() {
             ${cap ? `<div class="comment-text">${cap}</div>` : ''}
             <div class="comment-video-wrap">
               <video src="${c.videoSrc}" playsinline controls preload="metadata"></video>
-              <div class="video-comment-badge">视频评论</div>
+              <div class="video-comment-badge">Video comment</div>
             </div>
             <div class="comment-footer">
               <span class="comment-time">${c.time}</span>
@@ -1130,7 +1130,7 @@ function sendComment() {
   const text = input.value.trim();
   if (!text) return;
   if (!commentStore[currentCardId]) commentStore[currentCardId] = [...sampleComments];
-  commentStore[currentCardId].unshift({ avatar:'😊', name:'我', text, time:'刚刚', likes:'0' });
+  commentStore[currentCardId].unshift({ avatar:'😊', name:'Me', text, time:'Just now', likes:'0' });
   renderComments();
   input.value = '';
   document.getElementById('commentsList').scrollTop = 0;
@@ -1175,8 +1175,8 @@ function confirmVideoUpload() {
     cvId,
     videoSrc: pendingVideoURL,
     caption,
-    time: '刚刚',
-    displayUser: '我',
+    time: 'Just now',
+    displayUser: 'Me',
   });
   pendingVideoURL = null;
   pendingVideoBlob = null;

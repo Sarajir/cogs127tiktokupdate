@@ -1,47 +1,47 @@
 # cogs127tiktokupdate
 
-一个纯前端的「抖音风格」演示页面：竖屏刷视频、评论区、评论区视频上传，以及**仅含评论视频**的全屏流（非推荐算法内容）。
+A static, TikTok-style demo: vertical swipe feed, comments, video replies, and a **full-screen feed that only shows user-uploaded comment videos** (no “For You” algorithm mock).
 
-## 功能概览
+## Features
 
-- **推荐流**：上下滑动切换全屏卡片，点赞、双击点赞、分享、底部导航等 UI 模拟
-- **同款视频**：在主推荐流上**左滑**进入第二个竖滑分区；**右滑**返回
-- **评论区**：点击 💬 打开底部评论抽屉，文字评论与 **📹 视频评论**（本地选文件）
-- **评论视频全屏流**：评论区打开后**左滑**，进入与推荐页布局相近的全屏流，**只展示当前帖子评论区里用户上传的视频**；无视频时显示空状态说明。**右滑**或左上角「返回」回到评论区
-- **嵌套评论**：在全屏评论视频流里点 💬 可为单条评论视频打开独立评论层
+- **For You feed**: full-screen cards, like / double-tap like, share, bottom navigation
+- **Related feed**: **swipe left** on the main feed to open a second vertical column; **swipe right** to return
+- **Comments**: tap 💬 for a bottom sheet with text replies and **📹 video replies** (local file pick)
+- **Comment-video fullscreen feed**: with comments open, **swipe left** to open a feed that mirrors the main layout but **only lists video uploads from this post’s comment thread**. Empty state explains how to add videos. **Swipe right** or **Back** returns to the comment sheet
+- **Nested comments**: in the comment-video feed, 💬 opens a separate thread for that clip
 
-## 运行方式
+## Run locally
 
-无需构建工具，静态文件即可。
+No build step—serve the folder over HTTP:
 
 ```bash
 cd douyin
 python3 -m http.server 8888
 ```
 
-浏览器打开：<http://localhost:8888>
+Open [http://localhost:8888](http://localhost:8888).
 
-或直接双击 / 用浏览器打开 `index.html`（部分能力在 `file://` 下可能受限，建议用本地 HTTP 服务）。
+You can also open `index.html` directly; some behavior may be limited under `file://`—a local server is recommended.
 
-## 项目结构
+## Structure
 
 ```
 .
-├── index.html   # 单页应用（HTML + CSS + JS）
+├── index.html   # Single-file app (HTML + CSS + JS)
 ├── README.md
 └── .gitignore
 ```
 
-## 技术说明
+## Notes
 
-- 单文件实现，无框架依赖
-- 视频评论使用浏览器 `URL.createObjectURL`，数据仅存于当前会话，刷新后上传的 blob 链接会失效
-- 同款分区与主推荐为两套静态示例数据；**评论视频流**只聚合当前帖 `commentStore` 中的 `type: 'video'` 项
+- Single file, no framework
+- Video comments use `URL.createObjectURL`; data is session-only and blob URLs break after refresh
+- Main vs. “related” feeds use two static mock datasets; the **comment-video feed** only aggregates `type: 'video'` entries in `commentStore` for the current post
 
-## 仓库
+## Repository
 
-<https://github.com/Sarajir/cogs127tiktokupdate>
+[https://github.com/Sarajir/cogs127tiktokupdate](https://github.com/Sarajir/cogs127tiktokupdate)
 
-## 许可
+## Disclaimer
 
-课程 / 演示用途；界面与交互仅为学习模仿，与字节跳动「抖音」产品无关联。
+Educational / demo only. UI is a loose imitation for learning and is **not** affiliated with ByteDance or the Douyin / TikTok product.
