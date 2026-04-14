@@ -1,14 +1,14 @@
 # cogs127tiktokupdate
 
-A static, TikTok-style demo: vertical swipe feed, comments, video replies, and a **full-screen feed that only shows user-uploaded comment videos** (no “For You” algorithm mock).
+A static, TikTok-style demo: vertical swipe feed, comments, video replies, **AI prompt → GIF** in comments, and a **full-screen feed** for comment-only media (no “For You” algorithm mock).
 
 ## Features
 
 - **For You feed**: full-screen cards, like / double-tap like, share, bottom navigation
 - **Related feed**: **swipe left** on the main feed to open a second vertical column; **swipe right** to return
-- **Comments**: tap 💬 for a bottom sheet with text replies and **📹 video replies** (local file pick)
-- **Comment-video fullscreen feed**: with comments open, **swipe left** to open a feed that mirrors the main layout but **only lists video uploads from this post’s comment thread**. Empty state explains how to add videos. **Swipe right** or **Back** returns to the comment sheet
-- **Nested comments**: in the comment-video feed, 💬 opens a separate thread for that clip
+- **Comments**: tap 💬 for a bottom sheet with text replies, **📹 video replies** (local file pick), and **✨ Generate GIF**: describe a scene in the textarea → free [Pollinations](https://pollinations.ai) image → optional local **gif.js** loop → preview → **Post to comments**
+- **Comment-media fullscreen feed**: with comments open, **swipe left** to open a feed that mirrors the main layout but **only lists videos and AI GIFs from this post’s comment thread**. **Swipe right** or **Back** returns to the comment sheet
+- **Nested comments**: in the comment-media feed, 💬 opens a separate thread for that clip
 
 ## Run locally
 
@@ -34,9 +34,10 @@ You can also open `index.html` directly; some behavior may be limited under `fil
 
 ## Notes
 
-- Single file, no framework
-- Video comments use `URL.createObjectURL`; data is session-only and blob URLs break after refresh
-- Main vs. “related” feeds use two static mock datasets; the **comment-video feed** only aggregates `type: 'video'` entries in `commentStore` for the current post
+- Single file, no framework; **gif.js** is loaded from jsDelivr for client-side GIF encoding
+- Video / AI GIF comments live in `commentStore` in the browser: **session-only** unless you add a backend (see earlier discussion)
+- Pollinations is a third-party free image API; quality, latency, and availability are **not guaranteed**. If the image loads but the canvas is “tainted” (CORS), the app falls back to a **still AI image** in the comment (badge: “AI still”)
+- Main vs. “related” feeds use two static mock datasets; the **comment-media feed** aggregates `type: 'video'` and `type: 'aiGif'` in `commentStore` for the current post
 
 ## Repository
 

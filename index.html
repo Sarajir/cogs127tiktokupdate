@@ -311,7 +311,7 @@
     .comments-sheet {
       position: fixed; bottom: 0; left: 50%;
       transform: translateX(-50%) translateY(100%);
-      width: 100%; max-width: 420px; height: 68vh;
+      width: 100%; max-width: 420px; height: 74vh;
       background: #1a1a1a; border-radius: 16px 16px 0 0;
       z-index: 500; transition: transform .3s ease;
       display: flex; flex-direction: column;
@@ -398,6 +398,74 @@
     /* ═══════════════════════════════
        VIDEO UPLOAD PREVIEW MODAL
     ═══════════════════════════════ */
+    /* AI GIF generator (comments) */
+    .ai-gif-panel {
+      flex-shrink: 0;
+      border-top: 1px solid #2a2a2a;
+      padding: 10px 16px 8px;
+      background: #151515;
+    }
+    .ai-gif-panel label {
+      display: block; font-size: 11px; color: rgba(255,255,255,.45);
+      margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em;
+    }
+    .ai-gif-panel textarea {
+      width: 100%; min-height: 52px; max-height: 100px;
+      resize: vertical;
+      background: #2a2a2a; border: 1px solid #333; border-radius: 10px;
+      padding: 10px 12px; color: #fff; font-size: 13px;
+      outline: none; font-family: inherit;
+    }
+    .ai-gif-panel textarea::placeholder { color: rgba(255,255,255,.32); }
+    .gif-gen-btn {
+      width: 100%; margin-top: 8px; padding: 11px 14px;
+      border: none; border-radius: 10px; cursor: pointer;
+      font-size: 14px; font-weight: 700; color: #fff;
+      background: linear-gradient(95deg,#25f4ee,#6a5cff,#fe2c55);
+      background-size: 160% 100%;
+      transition: opacity .2s, transform .1s;
+    }
+    .gif-gen-btn:disabled { opacity: .55; cursor: wait; }
+    .gif-gen-btn:active:not(:disabled) { transform: scale(.98); }
+    .ai-gif-hint {
+      font-size: 10px; color: rgba(255,255,255,.35); margin-top: 6px; line-height: 1.4;
+    }
+
+    .comment-gif-wrap {
+      margin-top: 8px; border-radius: 10px; overflow: hidden;
+      position: relative; background: #000; max-width: 220px;
+    }
+    .comment-gif-wrap img {
+      width: 100%; display: block; vertical-align: middle;
+      max-height: 200px; object-fit: contain; background: #111;
+    }
+
+    .gif-gen-modal {
+      position: fixed; inset: 0; z-index: 720;
+      background: rgba(0,0,0,.88);
+      display: flex; align-items: flex-end; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .gif-gen-modal.show { opacity: 1; pointer-events: all; }
+    .gif-gen-card {
+      width: 100%; max-width: 420px;
+      background: #1a1a1a; border-radius: 20px 20px 0 0;
+      padding: 18px 16px 32px;
+      transform: translateY(36px); transition: transform .28s ease;
+    }
+    .gif-gen-modal.show .gif-gen-card { transform: translateY(0); }
+    .gif-gen-card h3 { font-size: 16px; margin-bottom: 8px; text-align: center; }
+    .gif-preview-prompt {
+      font-size: 12px; color: rgba(255,255,255,.5); text-align: center;
+      margin-bottom: 12px; max-height: 48px; overflow-y: auto;
+    }
+    .gif-preview-wrap {
+      border-radius: 12px; overflow: hidden; background: #000;
+      margin-bottom: 14px; min-height: 160px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .gif-preview-wrap img { max-width: 100%; max-height: 280px; object-fit: contain; }
+
     .video-preview-modal {
       position: fixed; inset: 0; z-index: 700;
       background: rgba(0,0,0,.85);
@@ -597,6 +665,12 @@
     </div>
     <div class="sheet-swipe-row" id="sheetSwipeHint">← Swipe left for fullscreen comment videos</div>
     <div class="comments-list" id="commentsList"></div>
+    <div class="ai-gif-panel">
+      <label for="gifPromptInput">Describe your GIF (English works best)</label>
+      <textarea id="gifPromptInput" placeholder="e.g. A cute strawberry sitting on a basketball, cartoon style, bright colors"></textarea>
+      <button type="button" class="gif-gen-btn" id="gifGenBtn" onclick="startGifGeneration()">✨ Generate GIF</button>
+      <p class="ai-gif-hint">Uses free Pollinations image API + local frames (gif.js). Results vary; still images may appear if the browser blocks canvas export.</p>
+    </div>
     <div class="sheet-input">
       <div class="upload-video-btn" id="uploadVideoBtn" onclick="triggerVideoUpload()" title="Upload video comment">📹</div>
       <input type="text" id="commentInput" placeholder="Write a comment or upload a video 📹" />
@@ -654,8 +728,24 @@
     </div>
   </div>
 
+  <!-- AI GIF preview before posting -->
+  <div class="gif-gen-modal" id="gifGenModal">
+    <div class="gif-gen-card">
+      <h3>Preview</h3>
+      <div class="gif-preview-prompt" id="gifPreviewPrompt"></div>
+      <div class="gif-preview-wrap">
+        <img id="gifPreviewImg" alt="Preview" />
+      </div>
+      <div class="preview-actions">
+        <div class="preview-cancel" onclick="cancelGifGeneration()">Discard</div>
+        <div class="preview-send" onclick="confirmGifPost()">Post to comments</div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /app -->
 
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════
    DATA
@@ -721,6 +811,8 @@ let currentLikes = {};
 let currentCardId = null;
 let pendingVideoBlob = null;
 let pendingVideoURL = null;
+/** { mode:'gif'|'static', gifSrc?, imageUrl?, prompt } after preview */
+let pendingGifResult = null;
 let currentScreen = 0;
 
 /** Parent main-feed video id whose comment thread we are browsing */
@@ -968,9 +1060,12 @@ function escapeHtml(s) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function getVideoCommentsForParent(parentId) {
+function getCommentMediaForParent(parentId) {
   const list = commentStore[parentId] || [];
-  return list.filter(c => c.type === 'video' && c.videoSrc);
+  return list.filter(c =>
+    (c.type === 'video' && c.videoSrc) ||
+    (c.type === 'aiGif' && c.gifSrc)
+  );
 }
 
 /** Build fullscreen vertical feed from comment-thread video uploads only */
@@ -979,7 +1074,7 @@ function buildCommentVideoFeed() {
   if (!feed || !commentVideoParentId) return;
   feed.innerHTML = '';
 
-  const vids = getVideoCommentsForParent(commentVideoParentId);
+  const vids = getCommentMediaForParent(commentVideoParentId);
 
   if (vids.length === 0) {
     const empty = document.createElement('div');
@@ -987,9 +1082,9 @@ function buildCommentVideoFeed() {
     empty.innerHTML = `
       <div class="cv-empty-placeholder">
         <div class="big">📹</div>
-        <h2>No video comments yet</h2>
-        <p>Only <strong>videos uploaded in this post’s comments</strong> appear here —<br>no For You algorithm content.</p>
-        <p>Go back to comments → tap 📹 to upload a video comment, then swipe left again.</p>
+        <h2>No comment media yet</h2>
+        <p>Only <strong>videos or AI GIFs posted in this thread’s comments</strong> show here —<br>no For You feed.</p>
+        <p>Go back → upload 📹, or use <strong>Generate GIF</strong>, then swipe left again.</p>
       </div>`;
     feed.appendChild(empty);
     return;
@@ -1000,6 +1095,14 @@ function buildCommentVideoFeed() {
     if (!c.cvId) c.cvId = cvId;
     if (currentLikes[cvId] === undefined) currentLikes[cvId] = false;
 
+    const isAiGif = c.type === 'aiGif';
+    const mediaHtml = isAiGif
+      ? `<img class="video-fill" src="${c.gifSrc}" alt="" />`
+      : `<video class="video-fill" src="${c.videoSrc}" playsinline loop controls preload="metadata"></video>`;
+    const avatarIcon = isAiGif ? '✨' : '📹';
+    const badgeLine = isAiGif ? 'AI GIF · from prompt' : 'Comment videos · not For You';
+    const musicLine = isAiGif ? 'Generated from your prompt' : 'From comment uploads';
+
     const card = document.createElement('div');
     card.className = 'video-card';
     card.dataset.cvId = cvId;
@@ -1007,12 +1110,12 @@ function buildCommentVideoFeed() {
     const who = escapeHtml(c.displayUser || 'Me');
     card.innerHTML = `
       <div class="video-bg">
-        <video class="video-fill" src="${c.videoSrc}" playsinline loop controls preload="metadata"></video>
+        ${mediaHtml}
       </div>
       <div class="heart-burst" id="heart-${cvId}">❤️</div>
       <div class="actions">
         <div class="avatar-wrap">
-          <div class="avatar" style="background:linear-gradient(135deg,#fe2c55,#ff6b9d)">📹</div>
+          <div class="avatar" style="background:linear-gradient(135deg,#fe2c55,#ff6b9d)">${avatarIcon}</div>
         </div>
         <div class="action-btn" id="like-btn-${cvId}" onclick="toggleLike('${cvId}',this,event)">
           <div class="action-icon">${currentLikes[cvId] ? '❤️' : '🤍'}</div>
@@ -1029,10 +1132,10 @@ function buildCommentVideoFeed() {
         <div class="action-btn"><div class="vinyl">🎵</div></div>
       </div>
       <div class="video-info">
-        <div class="cv-feed-badge">Comment videos · not For You</div>
+        <div class="cv-feed-badge">${badgeLine}</div>
         <div class="user-name">${who}</div>
         <div class="video-desc">${cap || '<span>No caption</span>'}</div>
-        <div class="music-row"><span class="note">♪</span><span>From comment uploads</span></div>
+        <div class="music-row"><span class="note">♪</span><span>${musicLine}</span></div>
       </div>`;
 
     let lastTap = 0;
@@ -1110,12 +1213,33 @@ function renderComments() {
           </div>
         </div>`;
     }
+    if (c.type === 'aiGif') {
+      const cap = c.caption ? escapeHtml(c.caption) : '';
+      const who = escapeHtml(c.displayUser || 'Me');
+      const badge = c.staticImage ? 'AI still' : 'AI GIF';
+      return `
+        <div class="comment-item">
+          <div class="comment-avatar">✨</div>
+          <div class="comment-body">
+            <div class="comment-name">${who}</div>
+            ${cap ? `<div class="comment-text">${cap}</div>` : ''}
+            <div class="comment-gif-wrap">
+              <img src="${c.gifSrc}" alt="AI generated" />
+              <div class="video-comment-badge">${badge}</div>
+            </div>
+            <div class="comment-footer">
+              <span class="comment-time">${c.time}</span>
+              <span class="comment-like">❤️ 0</span>
+            </div>
+          </div>
+        </div>`;
+    }
     return `
       <div class="comment-item">
         <div class="comment-avatar">${c.avatar}</div>
         <div class="comment-body">
-          <div class="comment-name">${c.name}</div>
-          <div class="comment-text">${c.text}</div>
+          <div class="comment-name">${escapeHtml(c.name)}</div>
+          <div class="comment-text">${escapeHtml(c.text)}</div>
           <div class="comment-footer">
             <span class="comment-time">${c.time}</span>
             <span class="comment-like">❤️ ${c.likes}</span>
@@ -1134,6 +1258,177 @@ function sendComment() {
   renderComments();
   input.value = '';
   document.getElementById('commentsList').scrollTop = 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   AI GIF FROM PROMPT (Pollinations + gif.js)
+═══════════════════════════════════════════════════ */
+function pollinationsImageUrl(prompt) {
+  const enhanced = prompt + ', colorful, clear subject, loop-friendly composition, smooth shading';
+  return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(enhanced)
+    + '?width=420&height=420&nologo=true&enhance=true';
+}
+
+function generateGifFromPrompt(prompt) {
+  return new Promise((resolve, reject) => {
+    const imgUrl = pollinationsImageUrl(prompt);
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    const timeout = setTimeout(() => {
+      reject(new Error('Image request timed out. Try again.'));
+    }, 90000);
+
+    img.onload = () => {
+      clearTimeout(timeout);
+      const maxW = 260, maxH = 260;
+      let w = img.naturalWidth || img.width;
+      let h = img.naturalHeight || img.height;
+      if (!w || !h) {
+        resolve({ mode: 'static', imageUrl: imgUrl, reason: 'bad dimensions' });
+        return;
+      }
+      const scale = Math.min(maxW / w, maxH / h, 1);
+      w = Math.round(w * scale);
+      h = Math.round(h * scale);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      let canvasOk = false;
+      try {
+        ctx.drawImage(img, 0, 0, w, h);
+        ctx.getImageData(0, 0, Math.min(8, w), Math.min(8, h));
+        canvasOk = true;
+      } catch (e) {
+        canvasOk = false;
+      }
+
+      if (!canvasOk || typeof GIF === 'undefined') {
+        resolve({ mode: 'static', imageUrl: imgUrl });
+        return;
+      }
+
+      let gif;
+      try {
+        gif = new GIF({
+          workers: 2,
+          quality: 20,
+          width: w,
+          height: h,
+          workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js',
+        });
+      } catch (e) {
+        resolve({ mode: 'static', imageUrl: imgUrl });
+        return;
+      }
+
+      const frames = 14;
+      for (let i = 0; i < frames; i++) {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, w, h);
+        const t = i / frames;
+        const pulse = 1 + 0.07 * Math.sin(t * Math.PI * 2);
+        const dw = w * pulse;
+        const dh = h * pulse;
+        const ox = (w - dw) / 2;
+        const oy = (h - dh) / 2;
+        ctx.drawImage(img, ox, oy, dw, dh);
+        gif.addFrame(canvas, { delay: 85, copy: true });
+      }
+
+      gif.on('finished', blob => {
+        resolve({ mode: 'gif', gifSrc: URL.createObjectURL(blob) });
+      });
+      gif.on('abort', () => resolve({ mode: 'static', imageUrl: imgUrl }));
+      try {
+        gif.render();
+      } catch (e) {
+        resolve({ mode: 'static', imageUrl: imgUrl });
+      }
+    };
+
+    img.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error('Could not load the generated image. Try a different prompt.'));
+    };
+    img.src = imgUrl + '&seed=' + Date.now();
+  });
+}
+
+async function startGifGeneration() {
+  const ta = document.getElementById('gifPromptInput');
+  const prompt = (ta && ta.value || '').trim();
+  if (!prompt) {
+    alert('Please describe the GIF you want.');
+    return;
+  }
+  if (!currentCardId || String(currentCardId).startsWith('__cv__')) {
+    alert('Open comments on a main video first.');
+    return;
+  }
+  const btn = document.getElementById('gifGenBtn');
+  btn.disabled = true;
+  const prevLabel = btn.textContent;
+  btn.textContent = 'Generating…';
+  try {
+    const result = await generateGifFromPrompt(prompt);
+    pendingGifResult = Object.assign({ prompt }, result);
+    document.getElementById('gifPreviewPrompt').textContent = prompt;
+    const prev = document.getElementById('gifPreviewImg');
+    prev.src = result.mode === 'gif' ? result.gifSrc : result.imageUrl;
+    document.getElementById('gifGenModal').classList.add('show');
+  } catch (e) {
+    console.error(e);
+    alert(e.message || 'Generation failed.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prevLabel;
+  }
+}
+
+function cancelGifGeneration() {
+  document.getElementById('gifGenModal').classList.remove('show');
+  if (pendingGifResult && pendingGifResult.mode === 'gif' && pendingGifResult.gifSrc) {
+    try { URL.revokeObjectURL(pendingGifResult.gifSrc); } catch (e) { /* ignore */ }
+  }
+  pendingGifResult = null;
+  document.getElementById('gifPreviewImg').src = '';
+}
+
+function confirmGifPost() {
+  if (!pendingGifResult || !currentCardId) return;
+  const pr = pendingGifResult;
+  if (!commentStore[currentCardId]) commentStore[currentCardId] = [...sampleComments];
+  const cvId = 'cv-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+  if (pr.mode === 'gif' && pr.gifSrc) {
+    commentStore[currentCardId].unshift({
+      type: 'aiGif',
+      cvId,
+      gifSrc: pr.gifSrc,
+      caption: pr.prompt,
+      time: 'Just now',
+      displayUser: 'Me',
+      staticImage: false,
+    });
+  } else {
+    commentStore[currentCardId].unshift({
+      type: 'aiGif',
+      cvId,
+      gifSrc: pr.imageUrl,
+      caption: pr.prompt,
+      time: 'Just now',
+      displayUser: 'Me',
+      staticImage: true,
+    });
+  }
+  pendingGifResult = null;
+  document.getElementById('gifGenModal').classList.remove('show');
+  document.getElementById('gifPreviewImg').src = '';
+  renderComments();
+  document.getElementById('commentsList').scrollTop = 0;
+  const ta = document.getElementById('gifPromptInput');
+  if (ta) ta.value = '';
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1220,10 +1515,12 @@ document.getElementById('commentInput').addEventListener('keydown', e => {
 (function setupCommentSheetSwipe() {
   const sheet = document.getElementById('commentsSheet');
   const previewModal = document.getElementById('videoPreviewModal');
+  const gifGenModal = document.getElementById('gifGenModal');
 
   sheet.addEventListener('touchstart', e => {
     if (!sheet.classList.contains('open')) return;
     if (previewModal.classList.contains('show')) return;
+    if (gifGenModal.classList.contains('show')) return;
     sheetTouchX = e.touches[0].clientX;
     sheetTouchY = e.touches[0].clientY;
     sheetAxis = null;
@@ -1233,6 +1530,7 @@ document.getElementById('commentInput').addEventListener('keydown', e => {
   sheet.addEventListener('touchmove', e => {
     if (!sheet.classList.contains('open')) return;
     if (previewModal.classList.contains('show')) return;
+    if (gifGenModal.classList.contains('show')) return;
     const dx = e.touches[0].clientX - sheetTouchX;
     const dy = e.touches[0].clientY - sheetTouchY;
     if (!sheetAxis) {
@@ -1260,6 +1558,7 @@ document.getElementById('commentInput').addEventListener('keydown', e => {
   sheet.addEventListener('mousedown', e => {
     if (!sheet.classList.contains('open')) return;
     if (previewModal.classList.contains('show')) return;
+    if (gifGenModal.classList.contains('show')) return;
     if (e.target.closest('input,textarea,video,.send-btn,.upload-video-btn,.sheet-close')) return;
     sheetMouseDown = true;
     sheetMouseStartX = e.clientX;
