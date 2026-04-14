@@ -6,7 +6,7 @@ A static, TikTok-style demo: vertical swipe feed, comments, video replies, **AI 
 
 - **For You feed**: full-screen cards, like / double-tap like, share, bottom navigation
 - **Related feed**: **swipe left** on the main feed to open a second vertical column; **swipe right** to return
-- **Comments**: tap 💬 for a bottom sheet with text replies, **📹 video replies** (local file pick), **✨ GIF** and **🎬 Clip**: same prompt box → free [Pollinations](https://pollinations.ai) still image → **GIF** uses local **gif.js** frames; **Clip** records a ~5s **WebM** in-browser (Ken Burns on the still) via **MediaRecorder** (not a cloud text-to-video model) → preview → **Post to comments**
+- **Comments**: tap 💬 for text + **📹 uploads**, **✨ GIF** (Pollinations + gif.js), and **🎬 Clip**: requests **four storyboard-style stills** from Pollinations (start → approach → payoff), then **crossfades** them into a ~6s **WebM** via **MediaRecorder** for motion that reads more physical than a single zoom; falls back to one-image Ken Burns if keyframes fail. Not real text-to-video.
 - **Comment-media fullscreen feed**: with comments open, **swipe left** to open a feed that mirrors the main layout but **only lists videos and AI GIFs from this post’s comment thread**. **Swipe right** or **Back** returns to the comment sheet
 - **Nested comments**: in the comment-media feed, 💬 opens a separate thread for that clip
 

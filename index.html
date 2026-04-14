@@ -689,7 +689,7 @@
         <button type="button" class="gif-gen-btn" id="gifGenBtn" onclick="startGifGeneration()">✨ GIF</button>
         <button type="button" class="clip-gen-btn" id="clipGenBtn" onclick="startClipGeneration()">🎬 Clip</button>
       </div>
-      <p class="ai-gif-hint"><strong>GIF:</strong> Pollinations image + gif.js frames. <strong>Clip:</strong> same image + Ken Burns motion in your browser → WebM (~5s). Not true text-to-video AI; no extra API key. WebM needs a recent Chrome / Edge / Firefox.</p>
+      <p class="ai-gif-hint"><strong>GIF:</strong> Pollinations + gif.js. <strong>Clip:</strong> requests <strong>4 different storyboard stills</strong> (start → approach → climax) then <strong>crossfades</strong> them into a ~6s WebM so motion reads more physical than a single zoom. If Pollinations fails mid-way, falls back to one-image zoom. Not real text-to-video. Chrome / Edge / Firefox desktop recommended.</p>
     </div>
     <div class="sheet-input">
       <div class="upload-video-btn" id="uploadVideoBtn" onclick="triggerVideoUpload()" title="Upload video comment">📹</div>
@@ -1139,7 +1139,7 @@ function buildCommentVideoFeed() {
       : `<video class="video-fill" src="${c.videoSrc}" playsinline loop controls preload="metadata"></video>`;
     const avatarIcon = isAiGif ? '✨' : (isAiClip ? '🎬' : '📹');
     const badgeLine = isAiGif ? 'AI GIF · from prompt' : (isAiClip ? 'AI clip · WebM' : 'Comment videos · not For You');
-    const musicLine = isAiGif ? 'Generated from your prompt' : (isAiClip ? 'Ken Burns from AI still' : 'From comment uploads');
+    const musicLine = isAiGif ? 'Generated from your prompt' : (isAiClip ? 'AI storyboard crossfade' : 'From comment uploads');
 
     const card = document.createElement('div');
     card.className = 'video-card';
@@ -1312,12 +1312,13 @@ function pollinationsImageUrl(prompt, seed) {
 /**
  * Pollinations often returns HTTP 429 (rate limit). Retry with backoff, then
  * load via blob: URL so canvas/GIF encoding is same-origin and reliable.
+ * @param {function(number): string} buildUrlForAttempt - receives attempt index
  */
-async function fetchPollinationsImageBlobUrl(prompt, maxAttempts) {
+async function fetchImageBlobUrlWithRetry(buildUrlForAttempt, maxAttempts) {
   const attempts = maxAttempts == null ? 5 : maxAttempts;
   let lastErr = 'Unknown error';
   for (let i = 0; i < attempts; i++) {
-    const url = pollinationsImageUrl(prompt, Date.now() + '-' + i + '-' + Math.random().toString(36).slice(2));
+    const url = buildUrlForAttempt(i);
     try {
       const res = await fetch(url, { mode: 'cors', cache: 'no-store', credentials: 'omit' });
       if (res.status === 429 || res.status === 503) {
@@ -1348,6 +1349,58 @@ async function fetchPollinationsImageBlobUrl(prompt, maxAttempts) {
     'Pollinations is rate-limiting or unreachable (' + lastErr + '). ' +
     'Wait 1–2 minutes and try again, or try another network / time of day.'
   );
+}
+
+async function fetchPollinationsImageBlobUrl(prompt, maxAttempts) {
+  return fetchImageBlobUrlWithRetry(
+    attempt => pollinationsImageUrl(prompt, Date.now() + '-' + attempt + '-' + Math.random().toString(36).slice(2)),
+    maxAttempts
+  );
+}
+
+/** Four storyboard prompts so each frame is a different composition (not just zoom). */
+function buildStoryboardPrompts(userPrompt) {
+  const u = userPrompt.trim();
+  return [
+    `${u}, scene 1 of 4: wide establishing shot, subjects separated, motion or approach only just beginning, readable environment`,
+    `${u}, scene 2 of 4: clear physical movement between subjects, mid-distance, action developing, dynamic body pose`,
+    `${u}, scene 3 of 4: much closer interaction, fast approach or chase, space between subjects shrinking, strong motion read`,
+    `${u}, scene 4 of 4: arrival or near-contact framing, payoff moment, closest shot, impact between the main subjects`,
+  ];
+}
+
+function storyboardPollinationsUrl(stageText, seed) {
+  const t = stageText + ', same characters and props as other frames, highly detailed, cinematic lighting, sharp anatomy';
+  return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(t)
+    + '?width=512&height=512&nologo=true&enhance=true&seed=' + encodeURIComponent(String(seed));
+}
+
+function decodeImageFromBlobUrl(blobUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Image decode failed'));
+    img.src = blobUrl;
+  });
+}
+
+/** Loads 4 keyframes; revokes each blob URL after decode. */
+async function loadStoryboardImages(userPrompt, onStatus) {
+  const stages = buildStoryboardPrompts(userPrompt);
+  const images = [];
+  for (let s = 0; s < stages.length; s++) {
+    if (onStatus) onStatus('Keyframe ' + (s + 1) + '/4…');
+    const stage = stages[s];
+    const { blobUrl } = await fetchImageBlobUrlWithRetry(
+      attempt => storyboardPollinationsUrl(stage, Date.now() + '-s' + s + '-a' + attempt + '-' + Math.random().toString(36).slice(2)),
+      4
+    );
+    const img = await decodeImageFromBlobUrl(blobUrl);
+    try { URL.revokeObjectURL(blobUrl); } catch (e) { /* ignore */ }
+    images.push(img);
+    if (s < stages.length - 1) await new Promise(r => setTimeout(r, 850));
+  }
+  return images;
 }
 
 function generateGifFromPrompt(prompt) {
@@ -1530,12 +1583,48 @@ function confirmGifPost() {
 }
 
 /* ═══════════════════════════════════════════════════
-   AI SHORT CLIP (Pollinations still → canvas Ken Burns → WebM)
-   Not a cloud text-to-video model; encodes locally via MediaRecorder.
+   AI SHORT CLIP: 4 Pollinations keyframes + crossfade WebM (storyboard motion)
+   Falls back to single-image Ken Burns if keyframes fail. Not true text-to-video.
 ═══════════════════════════════════════════════════ */
 function pickWebmMimeType() {
   const types = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
   return types.find(m => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(m)) || '';
+}
+
+function drawImageCover(ctx, img, W, H) {
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  if (!iw || !ih) return;
+  const scale = Math.max(W / iw, H / ih);
+  const dw = iw * scale;
+  const dh = ih * scale;
+  const ox = (W - dw) / 2;
+  const oy = (H - dh) / 2;
+  ctx.drawImage(img, ox, oy, dw, dh);
+}
+
+/** u in [0, n-1]: crossfade between adjacent keyframes (physical motion implied by different stills). */
+function drawStoryboardMotionFrame(ctx, images, W, H, u) {
+  const n = images.length;
+  if (n === 0) return;
+  if (n === 1) {
+    drawImageCover(ctx, images[0], W, H);
+    return;
+  }
+  const span = n - 1;
+  const pos = Math.min(span, Math.max(0, u));
+  const i = Math.floor(pos);
+  const local = pos - i;
+  const a = local * local * (3 - 2 * local);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+  drawImageCover(ctx, images[i], W, H);
+  if (i < n - 1 && a > 0.002) {
+    ctx.save();
+    ctx.globalAlpha = a;
+    drawImageCover(ctx, images[i + 1], W, H);
+    ctx.restore();
+  }
 }
 
 function drawKenBurnsFrame(ctx, img, W, H, t) {
@@ -1628,7 +1717,85 @@ function recordKenBurnsWebM(img, opts) {
   });
 }
 
-async function generateShortClipFromPrompt(prompt) {
+/**
+ * @param {HTMLImageElement[]} images
+ */
+function recordCrossfadeWebM(images, opts) {
+  const W = (opts && opts.width) || 360;
+  const H = (opts && opts.height) || 640;
+  const fps = (opts && opts.fps) || 24;
+  const durationSec = (opts && opts.durationSec) || 6;
+  const n = images.length;
+
+  const mime = pickWebmMimeType();
+  if (!mime) {
+    return Promise.reject(new Error('WebM recording is not supported in this browser. Try Chrome, Edge, or Firefox on desktop.'));
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const stream = canvas.captureStream(fps);
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2200000 });
+  const chunks = [];
+  rec.ondataavailable = e => {
+    if (e.data && e.data.size > 0) chunks.push(e.data);
+  };
+
+  const totalFrames = Math.round(fps * durationSec);
+  let intervalId = null;
+
+  return new Promise((resolve, reject) => {
+    rec.onerror = () => {
+      if (intervalId) clearInterval(intervalId);
+      reject(new Error('MediaRecorder error'));
+    };
+    rec.onstop = () => {
+      if (intervalId) clearInterval(intervalId);
+      const blob = new Blob(chunks, { type: mime.split(';')[0] });
+      if (!blob.size) {
+        reject(new Error('Recorded file is empty. Try again or use a different browser.'));
+        return;
+      }
+      resolve(URL.createObjectURL(blob));
+    };
+
+    let frame = 0;
+    rec.start(200);
+
+    setTimeout(() => {
+      intervalId = setInterval(() => {
+        if (frame >= totalFrames) {
+          if (intervalId) clearInterval(intervalId);
+          intervalId = null;
+          setTimeout(() => {
+            try { rec.stop(); } catch (e) { reject(e); }
+          }, 400);
+          return;
+        }
+        const t = totalFrames <= 1 ? 0 : frame / (totalFrames - 1);
+        const u = n <= 1 ? 0 : t * (n - 1);
+        drawStoryboardMotionFrame(ctx, images, W, H, u);
+        frame++;
+      }, 1000 / fps);
+    }, 150);
+  });
+}
+
+async function generateShortClipFromPrompt(prompt, onStatus) {
+  try {
+    const keyframes = await loadStoryboardImages(prompt, onStatus);
+    if (keyframes.length >= 2) {
+      if (onStatus) onStatus('Recording motion…');
+      const videoSrc = await recordCrossfadeWebM(keyframes, { width: 360, height: 640, fps: 24, durationSec: 6 });
+      return { videoSrc, mode: 'storyboard' };
+    }
+  } catch (e) {
+    console.warn('Storyboard clip failed, using zoom fallback:', e);
+  }
+  if (onStatus) onStatus('Fallback: zoom on one image…');
   const { blobUrl } = await fetchPollinationsImageBlobUrl(prompt, 5);
   const img = new Image();
   await new Promise((resolve, reject) => {
@@ -1639,7 +1806,7 @@ async function generateShortClipFromPrompt(prompt) {
   try {
     const videoSrc = await recordKenBurnsWebM(img, { width: 360, height: 640, fps: 24, durationSec: 5 });
     try { URL.revokeObjectURL(blobUrl); } catch (e) { /* ignore */ }
-    return { videoSrc };
+    return { videoSrc, mode: 'zoom' };
   } catch (e) {
     try { URL.revokeObjectURL(blobUrl); } catch (e2) { /* ignore */ }
     throw e;
@@ -1662,9 +1829,11 @@ async function startClipGeneration() {
   gifBtn.disabled = true;
   clipBtn.disabled = true;
   const prevClip = clipBtn.textContent;
-  clipBtn.textContent = 'Recording…';
+  clipBtn.textContent = 'Starting…';
   try {
-    const { videoSrc } = await generateShortClipFromPrompt(prompt);
+    const { videoSrc } = await generateShortClipFromPrompt(prompt, msg => {
+      clipBtn.textContent = msg;
+    });
     pendingClipResult = { videoSrc, prompt };
     document.getElementById('clipPreviewPrompt').textContent = prompt;
     const v = document.getElementById('clipPreviewVideo');
