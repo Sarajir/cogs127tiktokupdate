@@ -16,7 +16,7 @@ This project talks to external services **only over HTTPS from the browser** (an
   ```
   Then open `http://localhost:8888`.
 - **CORS:** Responses include `access-control-allow-origin: *`, so the browser can draw the image on a canvas when encoding the GIF (when the request succeeds).
-- **Limits:** Free tier can return **429 Too Many Requests** or be slow. Wait and retry, change prompt, or try another network/VPN if blocked.
+- **Limits:** Free tier often returns **429 Too Many Requests**. The app now **retries with backoff** (several attempts over ~30s) and loads the image via a **blob URL** so GIF encoding is more reliable. If it still fails, wait 1–2 minutes and try again.
 
 ### jsDelivr (gif.js + worker)
 

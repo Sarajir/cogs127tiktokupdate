@@ -1263,96 +1263,154 @@ function sendComment() {
 /* ═══════════════════════════════════════════════════
    AI GIF FROM PROMPT (Pollinations + gif.js)
 ═══════════════════════════════════════════════════ */
-function pollinationsImageUrl(prompt) {
+function pollinationsImageUrl(prompt, seed) {
   const enhanced = prompt + ', colorful, clear subject, loop-friendly composition, smooth shading';
   return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(enhanced)
-    + '?width=420&height=420&nologo=true&enhance=true';
+    + '?width=420&height=420&nologo=true&enhance=true&seed=' + encodeURIComponent(String(seed));
+}
+
+/**
+ * Pollinations often returns HTTP 429 (rate limit). Retry with backoff, then
+ * load via blob: URL so canvas/GIF encoding is same-origin and reliable.
+ */
+async function fetchPollinationsImageBlobUrl(prompt, maxAttempts) {
+  const attempts = maxAttempts == null ? 5 : maxAttempts;
+  let lastErr = 'Unknown error';
+  for (let i = 0; i < attempts; i++) {
+    const url = pollinationsImageUrl(prompt, Date.now() + '-' + i + '-' + Math.random().toString(36).slice(2));
+    try {
+      const res = await fetch(url, { mode: 'cors', cache: 'no-store', credentials: 'omit' });
+      if (res.status === 429 || res.status === 503) {
+        lastErr = 'Server busy (rate limit). Retrying…';
+        await new Promise(r => setTimeout(r, 2500 * (i + 1)));
+        continue;
+      }
+      if (!res.ok) {
+        lastErr = 'HTTP ' + res.status;
+        await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+        continue;
+      }
+      const ct = (res.headers.get('content-type') || '').toLowerCase();
+      const blob = await res.blob();
+      if (!blob.type.startsWith('image/') && !ct.startsWith('image/')) {
+        const snippet = (await blob.text()).slice(0, 120);
+        lastErr = 'Not an image response: ' + snippet;
+        await new Promise(r => setTimeout(r, 1500));
+        continue;
+      }
+      return { blobUrl: URL.createObjectURL(blob), directUrl: url };
+    } catch (e) {
+      lastErr = e.message || String(e);
+      await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+    }
+  }
+  throw new Error(
+    'Pollinations is rate-limiting or unreachable (' + lastErr + '). ' +
+    'Wait 1–2 minutes and try again, or try another network / time of day.'
+  );
 }
 
 function generateGifFromPrompt(prompt) {
   return new Promise((resolve, reject) => {
-    const imgUrl = pollinationsImageUrl(prompt);
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
     const timeout = setTimeout(() => {
-      reject(new Error('Image request timed out. Try again.'));
-    }, 90000);
+      reject(new Error('Generation timed out. Try again with a shorter prompt.'));
+    }, 120000);
 
-    img.onload = () => {
-      clearTimeout(timeout);
-      const maxW = 260, maxH = 260;
-      let w = img.naturalWidth || img.width;
-      let h = img.naturalHeight || img.height;
-      if (!w || !h) {
-        resolve({ mode: 'static', imageUrl: imgUrl, reason: 'bad dimensions' });
-        return;
-      }
-      const scale = Math.min(maxW / w, maxH / h, 1);
-      w = Math.round(w * scale);
-      h = Math.round(h * scale);
+    fetchPollinationsImageBlobUrl(prompt, 5)
+      .then(({ blobUrl, directUrl }) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 260, maxH = 260;
+          let w = img.naturalWidth || img.width;
+          let h = img.naturalHeight || img.height;
+          if (!w || !h) {
+            clearTimeout(timeout);
+            try { URL.revokeObjectURL(blobUrl); } catch (e) { /* ignore */ }
+            resolve({ mode: 'static', imageUrl: directUrl, reason: 'bad dimensions' });
+            return;
+          }
+          const scale = Math.min(maxW / w, maxH / h, 1);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
 
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      let canvasOk = false;
-      try {
-        ctx.drawImage(img, 0, 0, w, h);
-        ctx.getImageData(0, 0, Math.min(8, w), Math.min(8, h));
-        canvasOk = true;
-      } catch (e) {
-        canvasOk = false;
-      }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          let canvasOk = false;
+          try {
+            ctx.drawImage(img, 0, 0, w, h);
+            ctx.getImageData(0, 0, Math.min(8, w), Math.min(8, h));
+            canvasOk = true;
+          } catch (e) {
+            canvasOk = false;
+          }
 
-      if (!canvasOk || typeof GIF === 'undefined') {
-        resolve({ mode: 'static', imageUrl: imgUrl });
-        return;
-      }
+          if (!canvasOk || typeof GIF === 'undefined') {
+            clearTimeout(timeout);
+            try { URL.revokeObjectURL(blobUrl); } catch (e) { /* ignore */ }
+            resolve({ mode: 'static', imageUrl: directUrl });
+            return;
+          }
 
-      let gif;
-      try {
-        gif = new GIF({
-          workers: 2,
-          quality: 20,
-          width: w,
-          height: h,
-          workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js',
-        });
-      } catch (e) {
-        resolve({ mode: 'static', imageUrl: imgUrl });
-        return;
-      }
+          let gif;
+          try {
+            gif = new GIF({
+              workers: 2,
+              quality: 20,
+              width: w,
+              height: h,
+              workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js',
+            });
+          } catch (e) {
+            clearTimeout(timeout);
+            try { URL.revokeObjectURL(blobUrl); } catch (e2) { /* ignore */ }
+            resolve({ mode: 'static', imageUrl: directUrl });
+            return;
+          }
 
-      const frames = 14;
-      for (let i = 0; i < frames; i++) {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, w, h);
-        const t = i / frames;
-        const pulse = 1 + 0.07 * Math.sin(t * Math.PI * 2);
-        const dw = w * pulse;
-        const dh = h * pulse;
-        const ox = (w - dw) / 2;
-        const oy = (h - dh) / 2;
-        ctx.drawImage(img, ox, oy, dw, dh);
-        gif.addFrame(canvas, { delay: 85, copy: true });
-      }
+          const frames = 14;
+          for (let i = 0; i < frames; i++) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+            const t = i / frames;
+            const pulse = 1 + 0.07 * Math.sin(t * Math.PI * 2);
+            const dw = w * pulse;
+            const dh = h * pulse;
+            const ox = (w - dw) / 2;
+            const oy = (h - dh) / 2;
+            ctx.drawImage(img, ox, oy, dw, dh);
+            gif.addFrame(canvas, { delay: 85, copy: true });
+          }
 
-      gif.on('finished', blob => {
-        resolve({ mode: 'gif', gifSrc: URL.createObjectURL(blob) });
+          try { URL.revokeObjectURL(blobUrl); } catch (e) { /* ignore */ }
+
+          gif.on('finished', blob => {
+            clearTimeout(timeout);
+            resolve({ mode: 'gif', gifSrc: URL.createObjectURL(blob) });
+          });
+          gif.on('abort', () => {
+            clearTimeout(timeout);
+            resolve({ mode: 'static', imageUrl: directUrl });
+          });
+          try {
+            gif.render();
+          } catch (e) {
+            clearTimeout(timeout);
+            resolve({ mode: 'static', imageUrl: directUrl });
+          }
+        };
+        img.onerror = () => {
+          clearTimeout(timeout);
+          try { URL.revokeObjectURL(blobUrl); } catch (e) { /* ignore */ }
+          reject(new Error('Could not decode the generated image. Try again.'));
+        };
+        img.src = blobUrl;
+      })
+      .catch(err => {
+        clearTimeout(timeout);
+        reject(err);
       });
-      gif.on('abort', () => resolve({ mode: 'static', imageUrl: imgUrl }));
-      try {
-        gif.render();
-      } catch (e) {
-        resolve({ mode: 'static', imageUrl: imgUrl });
-      }
-    };
-
-    img.onerror = () => {
-      clearTimeout(timeout);
-      reject(new Error('Could not load the generated image. Try a different prompt.'));
-    };
-    img.src = imgUrl + '&seed=' + Date.now();
   });
 }
 
