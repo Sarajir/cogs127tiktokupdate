@@ -23,6 +23,8 @@ Open [http://localhost:8888](http://localhost:8888).
 
 You can also open `index.html` directly; some behavior may be limited under `file://`—a local server is recommended.
 
+**How third-party services are “connected”:** see [CONNECTING.md](./CONNECTING.md) (Pollinations + jsDelivr need no keys; optional Supabase needs your own project).
+
 ## Structure
 
 ```
