@@ -427,6 +427,20 @@
     }
     .gif-gen-btn:disabled { opacity: .55; cursor: wait; }
     .gif-gen-btn:active:not(:disabled) { transform: scale(.98); }
+    .ai-gen-actions {
+      display: flex; gap: 8px; margin-top: 8px;
+    }
+    .ai-gen-actions .gif-gen-btn,
+    .ai-gen-actions .clip-gen-btn { flex: 1; margin-top: 0; min-width: 0; }
+    .clip-gen-btn {
+      width: 100%; padding: 11px 10px;
+      border: none; border-radius: 10px; cursor: pointer;
+      font-size: 13px; font-weight: 700; color: #fff;
+      background: linear-gradient(115deg,#ff8a00,#e52e71,#9d4edd);
+      transition: opacity .2s, transform .1s;
+    }
+    .clip-gen-btn:disabled { opacity: .55; cursor: wait; }
+    .clip-gen-btn:active:not(:disabled) { transform: scale(.98); }
     .ai-gif-hint {
       font-size: 10px; color: rgba(255,255,255,.35); margin-top: 6px; line-height: 1.4;
     }
@@ -465,6 +479,9 @@
       display: flex; align-items: center; justify-content: center;
     }
     .gif-preview-wrap img { max-width: 100%; max-height: 280px; object-fit: contain; }
+    .clip-preview-wrap video {
+      width: 100%; max-height: 320px; border-radius: 12px; background: #000;
+    }
 
     .video-preview-modal {
       position: fixed; inset: 0; z-index: 700;
@@ -666,10 +683,13 @@
     <div class="sheet-swipe-row" id="sheetSwipeHint">← Swipe left for fullscreen comment videos</div>
     <div class="comments-list" id="commentsList"></div>
     <div class="ai-gif-panel">
-      <label for="gifPromptInput">Describe your GIF (English works best)</label>
+      <label for="gifPromptInput">Describe a GIF or a short clip (English works best)</label>
       <textarea id="gifPromptInput" placeholder="e.g. A cute strawberry sitting on a basketball, cartoon style, bright colors"></textarea>
-      <button type="button" class="gif-gen-btn" id="gifGenBtn" onclick="startGifGeneration()">✨ Generate GIF</button>
-      <p class="ai-gif-hint">Uses free Pollinations image API + local frames (gif.js). Results vary; still images may appear if the browser blocks canvas export.</p>
+      <div class="ai-gen-actions">
+        <button type="button" class="gif-gen-btn" id="gifGenBtn" onclick="startGifGeneration()">✨ GIF</button>
+        <button type="button" class="clip-gen-btn" id="clipGenBtn" onclick="startClipGeneration()">🎬 Clip</button>
+      </div>
+      <p class="ai-gif-hint"><strong>GIF:</strong> Pollinations image + gif.js frames. <strong>Clip:</strong> same image + Ken Burns motion in your browser → WebM (~5s). Not true text-to-video AI; no extra API key. WebM needs a recent Chrome / Edge / Firefox.</p>
     </div>
     <div class="sheet-input">
       <div class="upload-video-btn" id="uploadVideoBtn" onclick="triggerVideoUpload()" title="Upload video comment">📹</div>
@@ -739,6 +759,21 @@
       <div class="preview-actions">
         <div class="preview-cancel" onclick="cancelGifGeneration()">Discard</div>
         <div class="preview-send" onclick="confirmGifPost()">Post to comments</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI short clip (WebM) preview before posting -->
+  <div class="gif-gen-modal" id="clipGenModal">
+    <div class="gif-gen-card">
+      <h3>Clip preview</h3>
+      <div class="gif-preview-prompt" id="clipPreviewPrompt"></div>
+      <div class="gif-preview-wrap clip-preview-wrap">
+        <video id="clipPreviewVideo" controls playsinline></video>
+      </div>
+      <div class="preview-actions">
+        <div class="preview-cancel" onclick="cancelClipGeneration()">Discard</div>
+        <div class="preview-send" onclick="confirmClipPost()">Post clip to comments</div>
       </div>
     </div>
   </div>
@@ -813,6 +848,8 @@ let pendingVideoBlob = null;
 let pendingVideoURL = null;
 /** { mode:'gif'|'static', gifSrc?, imageUrl?, prompt } after preview */
 let pendingGifResult = null;
+/** { videoSrc, prompt } after clip preview */
+let pendingClipResult = null;
 let currentScreen = 0;
 
 /** Parent main-feed video id whose comment thread we are browsing */
@@ -1096,12 +1133,13 @@ function buildCommentVideoFeed() {
     if (currentLikes[cvId] === undefined) currentLikes[cvId] = false;
 
     const isAiGif = c.type === 'aiGif';
+    const isAiClip = c.type === 'video' && c.isAiClip;
     const mediaHtml = isAiGif
       ? `<img class="video-fill" src="${c.gifSrc}" alt="" />`
       : `<video class="video-fill" src="${c.videoSrc}" playsinline loop controls preload="metadata"></video>`;
-    const avatarIcon = isAiGif ? '✨' : '📹';
-    const badgeLine = isAiGif ? 'AI GIF · from prompt' : 'Comment videos · not For You';
-    const musicLine = isAiGif ? 'Generated from your prompt' : 'From comment uploads';
+    const avatarIcon = isAiGif ? '✨' : (isAiClip ? '🎬' : '📹');
+    const badgeLine = isAiGif ? 'AI GIF · from prompt' : (isAiClip ? 'AI clip · WebM' : 'Comment videos · not For You');
+    const musicLine = isAiGif ? 'Generated from your prompt' : (isAiClip ? 'Ken Burns from AI still' : 'From comment uploads');
 
     const card = document.createElement('div');
     card.className = 'video-card';
@@ -1196,15 +1234,17 @@ function renderComments() {
     if (c.type === 'video') {
       const cap = c.caption ? escapeHtml(c.caption) : '';
       const who = escapeHtml(c.displayUser || 'Me');
+      const vBadge = c.isAiClip ? 'AI clip (WebM)' : 'Video comment';
+      const vAvatar = c.isAiClip ? '🎬' : '😊';
       return `
         <div class="comment-item">
-          <div class="comment-avatar">😊</div>
+          <div class="comment-avatar">${vAvatar}</div>
           <div class="comment-body">
             <div class="comment-name">${who}</div>
             ${cap ? `<div class="comment-text">${cap}</div>` : ''}
             <div class="comment-video-wrap">
               <video src="${c.videoSrc}" playsinline controls preload="metadata"></video>
-              <div class="video-comment-badge">Video comment</div>
+              <div class="video-comment-badge">${vBadge}</div>
             </div>
             <div class="comment-footer">
               <span class="comment-time">${c.time}</span>
@@ -1490,6 +1530,194 @@ function confirmGifPost() {
 }
 
 /* ═══════════════════════════════════════════════════
+   AI SHORT CLIP (Pollinations still → canvas Ken Burns → WebM)
+   Not a cloud text-to-video model; encodes locally via MediaRecorder.
+═══════════════════════════════════════════════════ */
+function pickWebmMimeType() {
+  const types = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  return types.find(m => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(m)) || '';
+}
+
+function drawKenBurnsFrame(ctx, img, W, H, t) {
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  if (!iw || !ih) return;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+  const scaleLo = 1.06;
+  const scaleHi = 1.2;
+  const s = scaleLo + (scaleHi - scaleLo) * (0.5 - 0.5 * Math.cos(t * Math.PI));
+  const panX = (t - 0.5) * 28;
+  const panY = Math.sin(t * Math.PI) * 22;
+  const ar = iw / ih;
+  let drawW, drawH;
+  if (W / H > ar) {
+    drawH = H * s;
+    drawW = drawH * ar;
+  } else {
+    drawW = W * s;
+    drawH = drawW / ar;
+  }
+  const cx = W / 2 + panX;
+  const cy = H / 2 + panY;
+  ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
+}
+
+/**
+ * @returns {Promise<string>} object URL for WebM blob
+ */
+function recordKenBurnsWebM(img, opts) {
+  const W = (opts && opts.width) || 360;
+  const H = (opts && opts.height) || 640;
+  const fps = (opts && opts.fps) || 24;
+  const durationSec = (opts && opts.durationSec) || 5;
+
+  const mime = pickWebmMimeType();
+  if (!mime) {
+    return Promise.reject(new Error('WebM recording is not supported in this browser. Try Chrome, Edge, or Firefox on desktop.'));
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const stream = canvas.captureStream(fps);
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2000000 });
+  const chunks = [];
+  rec.ondataavailable = e => {
+    if (e.data && e.data.size > 0) chunks.push(e.data);
+  };
+
+  const totalFrames = Math.round(fps * durationSec);
+  let intervalId = null;
+
+  return new Promise((resolve, reject) => {
+    rec.onerror = () => {
+      if (intervalId) clearInterval(intervalId);
+      reject(new Error('MediaRecorder error'));
+    };
+    rec.onstop = () => {
+      if (intervalId) clearInterval(intervalId);
+      const blob = new Blob(chunks, { type: mime.split(';')[0] });
+      if (!blob.size) {
+        reject(new Error('Recorded file is empty. Try again or use a different browser.'));
+        return;
+      }
+      resolve(URL.createObjectURL(blob));
+    };
+
+    let frame = 0;
+    rec.start(200);
+
+    setTimeout(() => {
+      intervalId = setInterval(() => {
+        if (frame >= totalFrames) {
+          if (intervalId) clearInterval(intervalId);
+          intervalId = null;
+          setTimeout(() => {
+            try { rec.stop(); } catch (e) { reject(e); }
+          }, 400);
+          return;
+        }
+        const t = totalFrames <= 1 ? 0 : frame / (totalFrames - 1);
+        drawKenBurnsFrame(ctx, img, W, H, t);
+        frame++;
+      }, 1000 / fps);
+    }, 150);
+  });
+}
+
+async function generateShortClipFromPrompt(prompt) {
+  const { blobUrl } = await fetchPollinationsImageBlobUrl(prompt, 5);
+  const img = new Image();
+  await new Promise((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error('Could not load image for clip.'));
+    img.src = blobUrl;
+  });
+  try {
+    const videoSrc = await recordKenBurnsWebM(img, { width: 360, height: 640, fps: 24, durationSec: 5 });
+    try { URL.revokeObjectURL(blobUrl); } catch (e) { /* ignore */ }
+    return { videoSrc };
+  } catch (e) {
+    try { URL.revokeObjectURL(blobUrl); } catch (e2) { /* ignore */ }
+    throw e;
+  }
+}
+
+async function startClipGeneration() {
+  const ta = document.getElementById('gifPromptInput');
+  const prompt = (ta && ta.value || '').trim();
+  if (!prompt) {
+    alert('Please describe the clip you want (same box as GIF).');
+    return;
+  }
+  if (!currentCardId || String(currentCardId).startsWith('__cv__')) {
+    alert('Open comments on a main video first.');
+    return;
+  }
+  const gifBtn = document.getElementById('gifGenBtn');
+  const clipBtn = document.getElementById('clipGenBtn');
+  gifBtn.disabled = true;
+  clipBtn.disabled = true;
+  const prevClip = clipBtn.textContent;
+  clipBtn.textContent = 'Recording…';
+  try {
+    const { videoSrc } = await generateShortClipFromPrompt(prompt);
+    pendingClipResult = { videoSrc, prompt };
+    document.getElementById('clipPreviewPrompt').textContent = prompt;
+    const v = document.getElementById('clipPreviewVideo');
+    v.src = videoSrc;
+    v.load();
+    document.getElementById('clipGenModal').classList.add('show');
+  } catch (e) {
+    console.error(e);
+    alert(e.message || 'Clip generation failed.');
+  } finally {
+    gifBtn.disabled = false;
+    clipBtn.disabled = false;
+    clipBtn.textContent = prevClip;
+  }
+}
+
+function cancelClipGeneration() {
+  document.getElementById('clipGenModal').classList.remove('show');
+  const v = document.getElementById('clipPreviewVideo');
+  v.pause();
+  v.src = '';
+  if (pendingClipResult && pendingClipResult.videoSrc) {
+    try { URL.revokeObjectURL(pendingClipResult.videoSrc); } catch (e) { /* ignore */ }
+  }
+  pendingClipResult = null;
+}
+
+function confirmClipPost() {
+  if (!pendingClipResult || !currentCardId) return;
+  const pr = pendingClipResult;
+  if (!commentStore[currentCardId]) commentStore[currentCardId] = [...sampleComments];
+  const cvId = 'cv-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+  commentStore[currentCardId].unshift({
+    type: 'video',
+    cvId,
+    videoSrc: pr.videoSrc,
+    caption: pr.prompt,
+    time: 'Just now',
+    displayUser: 'Me',
+    isAiClip: true,
+  });
+  pendingClipResult = null;
+  document.getElementById('clipGenModal').classList.remove('show');
+  const v = document.getElementById('clipPreviewVideo');
+  v.pause();
+  v.src = '';
+  renderComments();
+  document.getElementById('commentsList').scrollTop = 0;
+  const ta = document.getElementById('gifPromptInput');
+  if (ta) ta.value = '';
+}
+
+/* ═══════════════════════════════════════════════════
    VIDEO COMMENT UPLOAD
 ═══════════════════════════════════════════════════ */
 function triggerVideoUpload() {
@@ -1574,11 +1802,13 @@ document.getElementById('commentInput').addEventListener('keydown', e => {
   const sheet = document.getElementById('commentsSheet');
   const previewModal = document.getElementById('videoPreviewModal');
   const gifGenModal = document.getElementById('gifGenModal');
+  const clipGenModal = document.getElementById('clipGenModal');
 
   sheet.addEventListener('touchstart', e => {
     if (!sheet.classList.contains('open')) return;
     if (previewModal.classList.contains('show')) return;
     if (gifGenModal.classList.contains('show')) return;
+    if (clipGenModal.classList.contains('show')) return;
     sheetTouchX = e.touches[0].clientX;
     sheetTouchY = e.touches[0].clientY;
     sheetAxis = null;
@@ -1589,6 +1819,7 @@ document.getElementById('commentInput').addEventListener('keydown', e => {
     if (!sheet.classList.contains('open')) return;
     if (previewModal.classList.contains('show')) return;
     if (gifGenModal.classList.contains('show')) return;
+    if (clipGenModal.classList.contains('show')) return;
     const dx = e.touches[0].clientX - sheetTouchX;
     const dy = e.touches[0].clientY - sheetTouchY;
     if (!sheetAxis) {
@@ -1617,6 +1848,7 @@ document.getElementById('commentInput').addEventListener('keydown', e => {
     if (!sheet.classList.contains('open')) return;
     if (previewModal.classList.contains('show')) return;
     if (gifGenModal.classList.contains('show')) return;
+    if (clipGenModal.classList.contains('show')) return;
     if (e.target.closest('input,textarea,video,.send-btn,.upload-video-btn,.sheet-close')) return;
     sheetMouseDown = true;
     sheetMouseStartX = e.clientX;
