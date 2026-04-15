@@ -441,9 +441,6 @@
     }
     .clip-gen-btn:disabled { opacity: .55; cursor: wait; }
     .clip-gen-btn:active:not(:disabled) { transform: scale(.98); }
-    .ai-gif-hint {
-      font-size: 10px; color: rgba(255,255,255,.35); margin-top: 6px; line-height: 1.4;
-    }
 
     .comment-gif-wrap {
       margin-top: 8px; border-radius: 10px; overflow: hidden;
@@ -705,7 +702,6 @@
         <button type="button" class="gif-gen-btn" id="gifGenBtn" onclick="startGifGeneration()">✨ GIF</button>
         <button type="button" class="clip-gen-btn" id="clipGenBtn" onclick="startClipGeneration()">🎬 Clip</button>
       </div>
-      <p class="ai-gif-hint"><strong>GIF:</strong> Pollinations + gif.js. <strong>Clip:</strong> requests <strong>4 different storyboard stills</strong> (start → approach → climax) then <strong>crossfades</strong> them into a ~6s WebM so motion reads more physical than a single zoom. If Pollinations fails mid-way, falls back to one-image zoom. Not real text-to-video. Chrome / Edge / Firefox desktop recommended.</p>
     </div>
     <div class="sheet-input">
       <div class="upload-video-btn" id="uploadVideoBtn" onclick="triggerVideoUpload()" title="Upload video comment">📹</div>
