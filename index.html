@@ -115,12 +115,32 @@
       position: absolute; right: 16px; top: 50%;
       transform: translateY(-30%); font-size: 22px; cursor: pointer;
     }
+    .top-nav-left-cluster {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-30%);
+      display: flex; align-items: center; gap: 6px;
+      z-index: 2;
+    }
     .top-nav .live-btn {
-      position: absolute; left: 16px; top: 50%;
-      transform: translateY(-30%); font-size: 13px;
+      position: static;
+      transform: none;
+      font-size: 13px;
       border: 1px solid rgba(255,255,255,.7); border-radius: 4px;
       padding: 2px 7px; color: rgba(255,255,255,.85); cursor: pointer;
     }
+    .brand-toggle-chip {
+      font-size: 11px; font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.45);
+      background: rgba(0,0,0,.5);
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .brand-toggle-chip:active { transform: scale(.96); }
 
     /* Secondary screen top nav */
     .sec-top-nav {
@@ -642,6 +662,10 @@
     .app.douyin .cv-feed-badge {
       background: rgba(254,36,66,.28);
     }
+    .app.douyin .brand-toggle-chip {
+      border-color: rgba(254,44,85,.85);
+      color: #ffd0dc;
+    }
   </style>
 </head>
 <body>
@@ -667,7 +691,10 @@
       <div class="swipe-hint right-hint" id="hint0" data-i18n="hintRelated">Related →</div>
 
       <div class="top-nav">
-        <div class="live-btn" data-i18n="live">LIVE</div>
+        <div class="top-nav-left-cluster">
+          <div class="live-btn" data-i18n="live">LIVE</div>
+          <button type="button" class="brand-toggle-chip" id="navBrandChip" onclick="toggleBrand()" title="Switch TikTok / Douyin demo style">抖音</button>
+        </div>
         <div class="tab" data-i18n="tabFollowing" onclick="switchTab(this)">Following</div>
         <div class="tab active" data-i18n="tabFyp" onclick="switchTab(this)">For You</div>
         <div class="tab" data-i18n="tabFriends" onclick="switchTab(this)">Friends</div>
@@ -1120,8 +1147,11 @@ function updateDocumentTitle() {
 function updateFabLabels() {
   const langBtn = document.getElementById('btnLangToggle');
   const brandBtn = document.getElementById('btnBrandToggle');
+  const navBrand = document.getElementById('navBrandChip');
+  const nextBrand = appBrand === 'tiktok' ? '抖音' : 'TikTok';
   if (langBtn) langBtn.textContent = appLocale === 'en' ? '中文' : 'EN';
-  if (brandBtn) brandBtn.textContent = appBrand === 'tiktok' ? '抖音' : 'TikTok';
+  if (brandBtn) brandBtn.textContent = nextBrand;
+  if (navBrand) navBrand.textContent = nextBrand;
 }
 
 function toggleLocale() {
