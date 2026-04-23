@@ -661,10 +661,52 @@
     .cv-empty-placeholder p { font-size: 14px; color: rgba(255,255,255,.55); line-height: 1.55; }
 
     .app.hide-section-pill .section-pill { opacity: 0; pointer-events: none; }
+
+    .global-mode-fab {
+      position: absolute;
+      right: 10px;
+      bottom: 78px;
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    .global-mode-fab button {
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.4);
+      background: rgba(0,0,0,.55);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 2px 10px rgba(0,0,0,.35);
+    }
+    .global-mode-fab button:active { transform: scale(.96); }
+    .global-mode-fab .fab-lang { min-width: 52px; }
+
+    .app.douyin .top-nav .tab.active::after {
+      background: #fe2c55;
+      width: 22px;
+      height: 3px;
+    }
+    .app.douyin .video-desc span { color: #ff2442; }
+    .app.douyin .follow-btn { background: #fe2c55; }
+    .app.douyin .post-btn::before { background: #ff2442; }
+    .app.douyin .post-btn::after { background: #ff6b81; }
+    .app.douyin .nav-item.active .nav-label { color: #fe2c55; }
+    .app.douyin .cv-feed-badge { background: rgba(254,36,66,.28); }
   </style>
 </head>
 <body>
-<div class="app">
+<div class="app" id="rootApp">
+  <div class="global-mode-fab" aria-label="Language and app style">
+    <button type="button" class="fab-lang" id="btnLangToggle" onclick="toggleLocale()">中文</button>
+    <button type="button" class="fab-brand" id="btnBrandToggle" onclick="toggleBrand()">抖音</button>
+  </div>
 
   <!-- Section dot indicators -->
   <div class="section-pill" id="sectionPill">
@@ -678,35 +720,35 @@
     <!-- ══════════ SCREEN 0: Main Feed ══════════ -->
     <div class="screen" id="screen0">
       <!-- swipe hint (right edge → go to secondary) -->
-      <div class="swipe-hint right-hint" id="hint0">Related →</div>
+      <div class="swipe-hint right-hint" id="hint0" data-i18n="hintRelated">Related →</div>
 
       <div class="top-nav">
-        <div class="live-btn">LIVE</div>
-        <div class="tab" onclick="switchTab(this)">Following</div>
-        <div class="tab active" onclick="switchTab(this)">For You</div>
-        <div class="tab" onclick="switchTab(this)">Friends</div>
-        <div class="search-icon" onclick="alert('Search')">🔍</div>
+        <div class="live-btn" data-i18n="live">LIVE</div>
+        <div class="tab" data-i18n="tabFollowing" onclick="switchTab(this)">Following</div>
+        <div class="tab active" data-i18n="tabFyp" onclick="switchTab(this)">For You</div>
+        <div class="tab" data-i18n="tabFriends" onclick="switchTab(this)">Friends</div>
+        <div class="search-icon" onclick="alertSearch()">🔍</div>
       </div>
 
       <div class="feed" id="feed0"></div>
 
       <div class="bottom-nav">
         <div class="nav-item active" onclick="switchNav(this)">
-          <div class="nav-icon">🏠</div><div class="nav-label">Home</div>
+          <div class="nav-icon">🏠</div><div class="nav-label" data-i18n="navHome">Home</div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">🔍</div><div class="nav-label">Explore</div>
+          <div class="nav-icon">🔍</div><div class="nav-label" data-i18n="navExplore">Explore</div>
         </div>
         <div class="nav-item">
-          <div class="post-btn" onclick="alert('Create post')">
+          <div class="post-btn" onclick="alertCreatePost()">
             <div class="post-inner">＋</div>
           </div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">💬</div><div class="nav-label">Inbox</div>
+          <div class="nav-icon">💬</div><div class="nav-label" data-i18n="navInbox">Inbox</div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">👤</div><div class="nav-label">Profile</div>
+          <div class="nav-icon">👤</div><div class="nav-label" data-i18n="navProfile">Profile</div>
         </div>
       </div>
     </div>
@@ -714,11 +756,11 @@
     <!-- ══════════ SCREEN 1: Secondary Feed ══════════ -->
     <div class="screen" id="screen1">
       <!-- swipe hint (left edge → go back) -->
-      <div class="swipe-hint left-hint" id="hint1">← For You</div>
+      <div class="swipe-hint left-hint" id="hint1" data-i18n="hintBackFyp">← For You</div>
 
       <div class="sec-top-nav">
-        <div class="sec-back-btn" onclick="goToScreen(0)">‹ For You</div>
-        <div class="sec-title">Related</div>
+        <div class="sec-back-btn" id="secBackBtn" data-i18n="secBack" onclick="goToScreen(0)">‹ For You</div>
+        <div class="sec-title" id="secTitle" data-i18n="secTitleRelated">Related</div>
         <div class="sec-more">⋯</div>
       </div>
 
@@ -726,21 +768,21 @@
 
       <div class="bottom-nav">
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">🏠</div><div class="nav-label">Home</div>
+          <div class="nav-icon">🏠</div><div class="nav-label" data-i18n="navHome">Home</div>
         </div>
         <div class="nav-item active" onclick="switchNav(this)">
-          <div class="nav-icon">🔍</div><div class="nav-label">Explore</div>
+          <div class="nav-icon">🔍</div><div class="nav-label" data-i18n="navExplore">Explore</div>
         </div>
         <div class="nav-item">
-          <div class="post-btn" onclick="alert('Create post')">
+          <div class="post-btn" onclick="alertCreatePost()">
             <div class="post-inner">＋</div>
           </div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">💬</div><div class="nav-label">Inbox</div>
+          <div class="nav-icon">💬</div><div class="nav-label" data-i18n="navInbox">Inbox</div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">👤</div><div class="nav-label">Profile</div>
+          <div class="nav-icon">👤</div><div class="nav-label" data-i18n="navProfile">Profile</div>
         </div>
       </div>
     </div>
@@ -754,32 +796,32 @@
       <div class="sheet-title" id="commentCount">Comments 128</div>
       <div class="sheet-close" onclick="closeComments()">✕</div>
     </div>
-    <div class="sheet-swipe-row" id="sheetSwipeHint">← Swipe left on the bar (not the list) — videos slide in inside this sheet</div>
+    <div class="sheet-swipe-row" id="sheetSwipeHint" data-i18n="sheetSwipeHintInline">← Swipe left on the bar (not the list) — videos slide in inside this sheet</div>
     <button type="button" class="sheet-open-feed-bar" id="sheetOpenFeedBar" onclick="openCommentVideoFeedFromBar(event)">
-      Open comment videos in this panel <span class="chev" aria-hidden="true">→</span>
+      <span data-i18n="sheetOpenFeedBarInline">Open comment videos in this panel</span> <span class="chev" aria-hidden="true">→</span>
     </button>
     <div class="sheet-scroll-stack" id="sheetScrollStack">
       <div class="comments-list" id="commentsList"></div>
       <div class="ai-gif-panel">
-        <label for="gifPromptInput">Describe a GIF or a short clip (English works best)</label>
-        <textarea id="gifPromptInput" placeholder="e.g. A cute strawberry sitting on a basketball, cartoon style, bright colors"></textarea>
+        <label for="gifPromptInput" id="gifPromptLabel" data-i18n="gifLabel">Describe a GIF or a short clip (English works best)</label>
+        <textarea id="gifPromptInput" data-i18n-placeholder="gifPlaceholder" placeholder="e.g. A cute strawberry sitting on a basketball, cartoon style, bright colors"></textarea>
         <div class="ai-gen-actions">
-          <button type="button" class="gif-gen-btn" id="gifGenBtn" onclick="startGifGeneration()">✨ GIF</button>
-          <button type="button" class="clip-gen-btn" id="clipGenBtn" onclick="startClipGeneration()">🎬 Clip</button>
+          <button type="button" class="gif-gen-btn" id="gifGenBtn" data-i18n="gifBtn" onclick="startGifGeneration()">✨ GIF</button>
+          <button type="button" class="clip-gen-btn" id="clipGenBtn" data-i18n="clipBtn" onclick="startClipGeneration()">🎬 Clip</button>
         </div>
       </div>
       <div id="commentVideoFeedInline" class="comment-video-feed-inline" aria-hidden="true">
-        <div class="cv-swipe-hint" id="cvSwipeHint">Swipe right → comments</div>
+        <div class="cv-swipe-hint" id="cvSwipeHint" data-i18n="cvSwipeHintInline">Swipe right → comments</div>
         <div class="cv-inline-toolbar">
-          <button type="button" class="cv-inline-back" onclick="closeCommentVideoFeed()">← Comments</button>
-          <span class="cv-inline-title">Videos in this thread</span>
+          <button type="button" class="cv-inline-back" onclick="closeCommentVideoFeed()" data-i18n="cvInlineBack">← Comments</button>
+          <span class="cv-inline-title" data-i18n="cvInlineTitle">Videos in this thread</span>
         </div>
         <div class="feed cv-inline-feed" id="commentVideoFeed"></div>
       </div>
     </div>
     <div class="sheet-input">
-      <div class="upload-video-btn" id="uploadVideoBtn" onclick="triggerVideoUpload()" title="Upload video comment">📹</div>
-      <input type="text" id="commentInput" placeholder="Write a comment or upload a video 📹" />
+      <div class="upload-video-btn" id="uploadVideoBtn" onclick="triggerVideoUpload()" data-i18n-title="uploadVideoTitle" title="Upload video comment">📹</div>
+      <input type="text" id="commentInput" data-i18n-placeholder="commentPlaceholder" placeholder="Write a comment or upload a video 📹" />
       <div class="send-btn" onclick="sendComment()">➤</div>
     </div>
   </div>
@@ -790,14 +832,14 @@
   <!-- Video preview modal -->
   <div class="video-preview-modal" id="videoPreviewModal">
     <div class="video-preview-card">
-      <div class="preview-title">Video comment preview</div>
+      <div class="preview-title" id="previewTitle" data-i18n="videoPreviewTitle">Video comment preview</div>
       <div class="preview-video-wrap">
         <video id="previewVideo" controls playsinline></video>
       </div>
-      <input class="preview-caption-input" id="previewCaption" placeholder="Add a caption (optional)" />
+      <input class="preview-caption-input" id="previewCaption" data-i18n-placeholder="previewCaptionPh" placeholder="Add a caption (optional)" />
       <div class="preview-actions">
-        <div class="preview-cancel" onclick="cancelVideoUpload()">Cancel</div>
-        <div class="preview-send" onclick="confirmVideoUpload()">Post video comment</div>
+        <div class="preview-cancel" onclick="cancelVideoUpload()" data-i18n="previewCancel">Cancel</div>
+        <div class="preview-send" onclick="confirmVideoUpload()" data-i18n="previewPostVideo">Post video comment</div>
       </div>
     </div>
   </div>
@@ -805,14 +847,14 @@
   <!-- AI GIF preview before posting -->
   <div class="gif-gen-modal" id="gifGenModal">
     <div class="gif-gen-card">
-      <h3>Preview</h3>
+      <h3 id="gifModalHeading" data-i18n="gifModalTitle">Preview</h3>
       <div class="gif-preview-prompt" id="gifPreviewPrompt"></div>
       <div class="gif-preview-wrap">
         <img id="gifPreviewImg" alt="Preview" />
       </div>
       <div class="preview-actions">
-        <div class="preview-cancel" onclick="cancelGifGeneration()">Discard</div>
-        <div class="preview-send" onclick="confirmGifPost()">Post to comments</div>
+        <div class="preview-cancel" onclick="cancelGifGeneration()" data-i18n="discard">Discard</div>
+        <div class="preview-send" onclick="confirmGifPost()" data-i18n="postGif">Post to comments</div>
       </div>
     </div>
   </div>
@@ -820,14 +862,14 @@
   <!-- AI short clip (WebM) preview before posting -->
   <div class="gif-gen-modal" id="clipGenModal">
     <div class="gif-gen-card">
-      <h3>Clip preview</h3>
+      <h3 id="clipModalHeading" data-i18n="clipModalTitle">Clip preview</h3>
       <div class="gif-preview-prompt" id="clipPreviewPrompt"></div>
       <div class="gif-preview-wrap clip-preview-wrap">
         <video id="clipPreviewVideo" controls playsinline></video>
       </div>
       <div class="preview-actions">
-        <div class="preview-cancel" onclick="cancelClipGeneration()">Discard</div>
-        <div class="preview-send" onclick="confirmClipPost()">Post clip to comments</div>
+        <div class="preview-cancel" onclick="cancelClipGeneration()" data-i18n="discard">Discard</div>
+        <div class="preview-send" onclick="confirmClipPost()" data-i18n="postClip">Post clip to comments</div>
       </div>
     </div>
   </div>
@@ -842,57 +884,309 @@
 const mainVideos = [
   { id:'m1', bg:'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)', emoji:'🌊',
     user:'@ocean_vibes', avatar:'🌊', avatarBg:'linear-gradient(135deg,#667eea,#764ba2)',
-    desc:'Late-night waves are so healing 🌙 #nightvibes #ocean', music:'Waves — ambient',
+    desc:'Late-night waves are so healing 🌙 #nightvibes #ocean',
+    descZh:'深夜海浪太治愈了 🌙 #夜拍 #海洋',
+    music:'Waves — ambient', musicZh:'海浪 — 氛围',
     likes:'324k', comments:4218, shares:'12k' },
   { id:'m2', bg:'linear-gradient(135deg,#f093fb,#f5576c,#4facfe)', emoji:'🌸',
     user:'@sakura_daily', avatar:'🌸', avatarBg:'linear-gradient(135deg,#f093fb,#f5576c)',
-    desc:'Kyoto cherry season — I come every year 📷✨ #japan #sakura', music:'Spring Day — indie',
+    desc:'Kyoto cherry season — I come every year 📷✨ #japan #sakura',
+    descZh:'京都樱花季，每年都来 📷✨ #日本 #樱花',
+    music:'Spring Day — indie', musicZh:'春日 — 独立民谣',
     likes:'881k', comments:9832, shares:'56k' },
   { id:'m3', bg:'linear-gradient(135deg,#43e97b,#38f9d7)', emoji:'🍜',
     user:'@foodie_life', avatar:'🍜', avatarBg:'linear-gradient(135deg,#43e97b,#38f9d7)',
-    desc:'Hand-pulled noodles at home — full recipe below 👇 #food #cooking', music:'Street Food — folk',
+    desc:'Hand-pulled noodles at home — full recipe below 👇 #food #cooking',
+    descZh:'在家手拉面，完整食谱见下方 👇 #美食 #料理',
+    music:'Street Food — folk', musicZh:'街市小吃 — 民谣',
     likes:'217k', comments:3301, shares:'89k' },
   { id:'m4', bg:'linear-gradient(135deg,#fa709a,#fee140)', emoji:'🐱',
     user:'@catworld_zzz', avatar:'🐱', avatarBg:'linear-gradient(135deg,#fa709a,#fee140)',
-    desc:'My orange cat found the snacks 🍪😂 #cats #orangecat', music:'Meow Mix — parody',
+    desc:'My orange cat found the snacks 🍪😂 #cats #orangecat',
+    descZh:'我家橘猫偷吃零食 🍪😂 #猫 #橘猫',
+    music:'Meow Mix — parody', musicZh:'喵喵混音 — 搞笑',
     likes:'1.56M', comments:24100, shares:'120k' },
   { id:'m5', bg:'linear-gradient(135deg,#4facfe,#00f2fe)', emoji:'🏔️',
     user:'@mountain_trek', avatar:'🏔️', avatarBg:'linear-gradient(135deg,#4facfe,#00f2fe)',
-    desc:'4800m — clouds under my feet ⛰️🌤️ #hiking #tibet', music:'The World — rock',
+    desc:'4800m — clouds under my feet ⛰️🌤️ #hiking #tibet',
+    descZh:'海拔4800米，脚下云海 ⛰️🌤️ #徒步 #高原',
+    music:'The World — rock', musicZh:'世界 — 摇滚',
     likes:'453k', comments:6723, shares:'34k' },
 ];
 
 const secondaryVideos = [
   { id:'s1', bg:'linear-gradient(135deg,#f7971e,#ffd200)', emoji:'🎸',
     user:'@rock_night', avatar:'🎸', avatarBg:'linear-gradient(135deg,#f7971e,#ffd200)',
-    desc:'Same vibe BGM — you need this track 🎵🔥 #music #rock', music:'Nocturne — cover',
+    desc:'Same vibe BGM — you need this track 🎵🔥 #music #rock',
+    descZh:'同款氛围BGM，这首必听 🎵🔥 #音乐 #摇滚',
+    music:'Nocturne — cover', musicZh:'夜曲 — 翻奏',
     likes:'192k', comments:2311, shares:'71k' },
   { id:'s2', bg:'linear-gradient(135deg,#30cfd0,#330867)', emoji:'🌌',
     user:'@space_explorer', avatar:'🌌', avatarBg:'linear-gradient(135deg,#30cfd0,#330867)',
-    desc:'Camping under a fake galaxy — stunning #camping #stars', music:'Stardust — pop',
+    desc:'Camping under a fake galaxy — stunning #camping #stars',
+    descZh:'在“假银河”下露营，太震撼 #露营 #星空',
+    music:'Stardust — pop', musicZh:'星尘 — 流行',
     likes:'638k', comments:8820, shares:'45k' },
   { id:'s3', bg:'linear-gradient(135deg,#ee0979,#ff6a00)', emoji:'🦊',
     user:'@urban_fox', avatar:'🦊', avatarBg:'linear-gradient(135deg,#ee0979,#ff6a00)',
-    desc:'City street shots — every corner has a story 📸 #street #urban', music:'Serendipity — acoustic',
+    desc:'City street shots — every corner has a story 📸 #street #urban',
+    descZh:'城市街拍，每个角落都有故事 📸 #街拍 #城市',
+    music:'Serendipity — acoustic', musicZh:'偶然 — 木吉他',
     likes:'275k', comments:5104, shares:'23k' },
   { id:'s4', bg:'linear-gradient(135deg,#11998e,#38ef7d)', emoji:'🏄',
     user:'@surf_dude', avatar:'🏄', avatarBg:'linear-gradient(135deg,#11998e,#38ef7d)',
-    desc:'Bali surf diary — the wave won’t wait 🌊🤙 #surf #travel', music:'Oceans — rock',
+    desc:'Bali surf diary — the wave won’t wait 🌊🤙 #surf #travel',
+    descZh:'巴厘岛冲浪日记，浪不等人 🌊🤙 #冲浪 #旅行',
+    music:'Oceans — rock', musicZh:'海洋 — 摇滚',
     likes:'410k', comments:7230, shares:'99k' },
   { id:'s5', bg:'linear-gradient(135deg,#fc5c7d,#6a3093)', emoji:'🎨',
     user:'@art_studio_99', avatar:'🎨', avatarBg:'linear-gradient(135deg,#fc5c7d,#6a3093)',
-    desc:'30-second speed paint — I’m shook 😳 #art #drawing', music:'Sunny Day — pop',
+    desc:'30-second speed paint — I’m shook 😳 #art #drawing',
+    descZh:'30秒速涂，我人傻了 😳 #画画 #艺术',
+    music:'Sunny Day — pop', musicZh:'晴天 — 流行',
     likes:'556k', comments:11200, shares:'68k' },
 ];
 
 const sampleComments = [
-  { avatar:'😂', name:'HappyDaily', text:'LOL this is so real', time:'3h ago', likes:'1.2k' },
-  { avatar:'🌟', name:'StarLight', text:'This is gorgeous — need the same setup!', time:'5h ago', likes:'892' },
-  { avatar:'🐼', name:'PandaMode', text:'Dropping a like — have a great day 😊', time:'8h ago', likes:'456' },
-  { avatar:'🦋', name:'ButterflyFX', text:'My mom cried watching this, said it reminded her of a lot', time:'Yesterday', likes:'3.4k' },
-  { avatar:'🎵', name:'MusicNerd', text:'This song is on repeat for two hours straight', time:'Yesterday', likes:'278' },
-  { avatar:'🌈', name:'RainbowRun', text:'Shared with friends — everyone loved it!', time:'2d ago', likes:'190' },
+  { avatar:'😂', name:'HappyDaily', text:'LOL this is so real', textZh:'笑死，太真实了', time:'3h ago', timeZh:'3小时前', likes:'1.2k' },
+  { avatar:'🌟', name:'StarLight', text:'This is gorgeous — need the same setup!', textZh:'太好看了，想get同款布景', time:'5h ago', timeZh:'5小时前', likes:'892' },
+  { avatar:'🐼', name:'PandaMode', text:'Dropping a like — have a great day 😊', textZh:'已点赞，祝你今天开心 😊', time:'8h ago', timeZh:'8小时前', likes:'456' },
+  { avatar:'🦋', name:'ButterflyFX', text:'My mom cried watching this, said it reminded her of a lot', textZh:'我妈看哭了，说想起很多事', time:'Yesterday', timeZh:'昨天', likes:'3.4k' },
+  { avatar:'🎵', name:'MusicNerd', text:'This song is on repeat for two hours straight', textZh:'这首歌单曲循环两小时了', time:'Yesterday', timeZh:'昨天', likes:'278' },
+  { avatar:'🌈', name:'RainbowRun', text:'Shared with friends — everyone loved it!', textZh:'转给朋友了，大家都说绝', time:'2d ago', timeZh:'2天前', likes:'190' },
 ];
+
+let appLocale = localStorage.getItem('svd_locale') || 'en';
+let appBrand = localStorage.getItem('svd_brand') || 'tiktok';
+
+const STRINGS = {
+  en: {
+    live: 'LIVE',
+    hintRelated: 'Related →',
+    tabFollowing: 'Following',
+    tabFyp: 'For You',
+    tabFriends: 'Friends',
+    navHome: 'Home',
+    navExplore: 'Explore',
+    navInbox: 'Inbox',
+    navProfile: 'Profile',
+    hintBackFyp: '← For You',
+    secBack: '‹ For You',
+    secTitleRelated: 'Related',
+    sheetSwipeHintInline: '← Swipe left on the bar (not the list) — videos slide in inside this sheet',
+    sheetOpenFeedBarInline: 'Open comment videos in this panel',
+    cvSwipeHintInline: 'Swipe right → comments',
+    cvInlineBack: '← Comments',
+    cvInlineTitle: 'Videos in this thread',
+    gifLabel: 'Describe a GIF or a short clip (English works best)',
+    gifPlaceholder: 'e.g. A cute strawberry sitting on a basketball, cartoon style, bright colors',
+    gifBtn: '✨ GIF',
+    clipBtn: '🎬 Clip',
+    uploadVideoTitle: 'Upload video comment',
+    commentPlaceholder: 'Write a comment or upload a video 📹',
+    videoPreviewTitle: 'Video comment preview',
+    previewCaptionPh: 'Add a caption (optional)',
+    previewCancel: 'Cancel',
+    previewPostVideo: 'Post video comment',
+    gifModalTitle: 'Preview',
+    clipModalTitle: 'Clip preview',
+    discard: 'Discard',
+    postGif: 'Post to comments',
+    postClip: 'Post clip to comments',
+    badgeVideoComment: 'Video comment',
+    badgeAiClip: 'AI clip (WebM)',
+    badgeAiGif: 'AI GIF',
+    badgeAiStill: 'AI still',
+    noCaption: 'No caption',
+    musicAiGif: 'Generated from your prompt',
+    musicAiClip: 'AI storyboard crossfade',
+    musicUpload: 'From comment uploads',
+    badgeLineAiGif: 'AI GIF · from prompt',
+    badgeLineAiClip: 'AI clip · WebM',
+    badgeLineVideo: 'Comment videos · not For You',
+    emptyCvTitle: 'No comment media yet',
+    emptyCvP1: 'Only videos or AI GIFs posted in this thread’s comments show here — no For You feed.',
+    emptyCvP2: 'Go back → upload 📹, or use Generate GIF, then swipe left again.',
+    justNow: 'Just now',
+    displayMe: 'Me',
+    generating: 'Generating…',
+    starting: 'Starting…',
+    keyframeProgress: 'Keyframe {n}/4…',
+    recordingMotion: 'Recording motion…',
+    fallbackZoom: 'Fallback: zoom on one image…',
+    alertSearch: 'Search',
+    alertCreatePost: 'Create post',
+    alertShare: 'Share to:\nMessages · Stories · More · Copy link',
+    alertCvNested: 'Open comment videos from the main post’s comments, not a nested thread.',
+    alertGifPrompt: 'Please describe the GIF you want.',
+    alertCommentsFirst: 'Open comments on a main video first.',
+    alertClipPrompt: 'Please describe the clip you want (same box as GIF).',
+    generationFailed: 'Generation failed.',
+    clipGenFailed: 'Clip generation failed.',
+  },
+  zh: {
+    live: '直播',
+    hintRelated: '相关 →',
+    tabFollowing: '关注',
+    tabFyp: '推荐',
+    tabFriends: '朋友',
+    navHome: '首页',
+    navExplore: '发现',
+    navInbox: '消息',
+    navProfile: '我',
+    hintBackFyp: '← 推荐',
+    secBack: '‹ 推荐',
+    secTitleRelated: '相关',
+    sheetSwipeHintInline: '在下方横条上向左滑（不要在列表上）— 视频会在面板内滑入',
+    sheetOpenFeedBarInline: '在本面板内打开评论视频',
+    cvSwipeHintInline: '右滑返回评论',
+    cvInlineBack: '← 评论',
+    cvInlineTitle: '本串内的视频',
+    gifLabel: '描述想要的 GIF 或短视频（英文提示词通常效果更好）',
+    gifPlaceholder: '例如：一颗草莓坐在篮球上，卡通风格，色彩明亮',
+    gifBtn: '✨ GIF',
+    clipBtn: '🎬 短片',
+    uploadVideoTitle: '上传视频评论',
+    commentPlaceholder: '写评论或上传视频 📹',
+    videoPreviewTitle: '视频评论预览',
+    previewCaptionPh: '添加说明（可选）',
+    previewCancel: '取消',
+    previewPostVideo: '发布视频评论',
+    gifModalTitle: '预览',
+    clipModalTitle: '短片预览',
+    discard: '放弃',
+    postGif: '发到评论',
+    postClip: '发布短片到评论',
+    badgeVideoComment: '视频评论',
+    badgeAiClip: 'AI 短片 (WebM)',
+    badgeAiGif: 'AI GIF',
+    badgeAiStill: 'AI 静图',
+    noCaption: '无文案',
+    musicAiGif: '来自你的提示词',
+    musicAiClip: 'AI 分镜渐变',
+    musicUpload: '来自评论上传',
+    badgeLineAiGif: 'AI GIF · 来自提示词',
+    badgeLineAiClip: 'AI 短片 · WebM',
+    badgeLineVideo: '评论视频 · 非推荐流',
+    emptyCvTitle: '还没有评论媒体',
+    emptyCvP1: '只有本帖评论里上传的视频或 AI GIF 会出现在这里，没有算法推荐流。',
+    emptyCvP2: '返回 → 上传 📹，或使用生成 GIF，然后再左滑进入。',
+    justNow: '刚刚',
+    displayMe: '我',
+    generating: '生成中…',
+    starting: '启动中…',
+    keyframeProgress: '分镜 {n}/4…',
+    recordingMotion: '正在合成动效…',
+    fallbackZoom: '回退：单图缩放…',
+    alertSearch: '搜索',
+    alertCreatePost: '发布作品',
+    alertShare: '分享到：\n私信 · 动态 · 更多 · 复制链接',
+    alertCvNested: '请从主视频评论进入评论视频面板，不能在子串里打开。',
+    alertGifPrompt: '请先描述想要的 GIF。',
+    alertCommentsFirst: '请先在主视频上打开评论。',
+    alertClipPrompt: '请先描述想要的短片（与 GIF 同一输入框）。',
+    generationFailed: '生成失败。',
+    clipGenFailed: '短片生成失败。',
+  },
+};
+
+function t(key) {
+  const pack = STRINGS[appLocale] || STRINGS.en;
+  return (pack && pack[key]) || STRINGS.en[key] || key;
+}
+function tReplace(key, vars) {
+  let s = t(key);
+  if (vars) Object.keys(vars).forEach(k => { s = s.replace('{' + k + '}', String(vars[k])); });
+  return s;
+}
+function fmtCommentsTitle(n) {
+  return appLocale === 'zh' ? ('评论 ' + fmtNum(n)) : ('Comments ' + fmtNum(n));
+}
+function pickVideoDesc(v) {
+  return (appLocale === 'zh' && v.descZh) ? v.descZh : v.desc;
+}
+function pickVideoMusic(v) {
+  return (appLocale === 'zh' && v.musicZh) ? v.musicZh : v.music;
+}
+function pickCommentText(c) {
+  if (c.type === 'video' || c.type === 'aiGif') return '';
+  return (appLocale === 'zh' && c.textZh) ? c.textZh : c.text;
+}
+function pickCommentTime(c) {
+  return (appLocale === 'zh' && c.timeZh) ? c.timeZh : c.time;
+}
+function applyDataI18nAttrs() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (k) el.textContent = t(k);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const k = el.getAttribute('data-i18n-placeholder');
+    if (k) el.setAttribute('placeholder', t(k));
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const k = el.getAttribute('data-i18n-title');
+    if (k) el.setAttribute('title', t(k));
+  });
+}
+function updateDocumentTitle() {
+  const brandZh = appBrand === 'douyin' ? '抖音' : 'TikTok';
+  const brandEn = appBrand === 'douyin' ? 'Douyin' : 'TikTok';
+  if (appLocale === 'zh') {
+    document.title = '短视频演示 · ' + brandZh + ' 风格（内嵌评论视频）';
+  } else {
+    document.title = 'Short Video Demo · ' + brandEn + '-style (sheet videos)';
+  }
+}
+function updateFabLabels() {
+  const langBtn = document.getElementById('btnLangToggle');
+  const brandBtn = document.getElementById('btnBrandToggle');
+  if (langBtn) langBtn.textContent = appLocale === 'en' ? '中文' : 'EN';
+  if (brandBtn) brandBtn.textContent = appBrand === 'tiktok' ? '抖音' : 'TikTok';
+}
+function toggleLocale() {
+  appLocale = appLocale === 'en' ? 'zh' : 'en';
+  localStorage.setItem('svd_locale', appLocale);
+  refreshAllCopy();
+}
+function toggleBrand() {
+  appBrand = appBrand === 'tiktok' ? 'douyin' : 'tiktok';
+  localStorage.setItem('svd_brand', appBrand);
+  refreshAllCopy();
+}
+function alertSearch() { alert(t('alertSearch')); }
+function alertCreatePost() { alert(t('alertCreatePost')); }
+function refreshAllCopy() {
+  document.documentElement.lang = appLocale === 'zh' ? 'zh-Hans' : 'en';
+  const root = document.getElementById('rootApp');
+  if (root) root.classList.toggle('douyin', appBrand === 'douyin');
+  updateDocumentTitle();
+  updateFabLabels();
+  applyDataI18nAttrs();
+  rebuildFeeds();
+  const sheet = document.getElementById('commentsSheet');
+  const cvInline = document.getElementById('commentVideoFeedInline');
+  if (sheet && sheet.classList.contains('open') && currentCardId && !String(currentCardId).startsWith('__cv__')) {
+    const mv = mainVideos.find(x => x.id === currentCardId) || secondaryVideos.find(x => x.id === currentCardId);
+    const count = mv ? mv.comments : ((commentStore[currentCardId] || []).length);
+    document.getElementById('commentCount').textContent = fmtCommentsTitle(count);
+    renderComments();
+  } else if (sheet && sheet.classList.contains('open') && String(currentCardId || '').startsWith('__cv__')) {
+    document.getElementById('commentCount').textContent = fmtCommentsTitle(0);
+    renderComments();
+  }
+  if (cvInline && cvInline.classList.contains('open') && commentVideoParentId) {
+    buildCommentVideoFeed();
+  }
+}
+function rebuildFeeds() {
+  ['feed0', 'feed1'].forEach(fid => {
+    const f = document.getElementById(fid);
+    if (f) f.innerHTML = '';
+  });
+  buildFeed('feed0', mainVideos);
+  buildFeed('feed1', secondaryVideos);
+}
 
 /* live comment list per card */
 const commentStore = {};
@@ -922,8 +1216,12 @@ let cvTouchX = 0, cvTouchY = 0, cvAxis = null, cvDragging = false;
 function buildFeed(containerId, videoList) {
   const feed = document.getElementById(containerId);
   videoList.forEach(v => {
-    currentLikes[v.id] = false;
-    commentStore[v.id] = [...sampleComments.map(c => ({...c}))];
+    if (currentLikes[v.id] === undefined) currentLikes[v.id] = false;
+    if (!commentStore[v.id]) commentStore[v.id] = [...sampleComments.map(c => ({...c}))];
+
+    const liked = !!currentLikes[v.id];
+    const d = pickVideoDesc(v);
+    const mu = pickVideoMusic(v);
 
     const card = document.createElement('div');
     card.className = 'video-card';
@@ -939,8 +1237,8 @@ function buildFeed(containerId, videoList) {
           <div class="avatar" style="background:${v.avatarBg}">${v.avatar}</div>
           <div class="follow-btn" onclick="toggleFollow(this,event)">＋</div>
         </div>
-        <div class="action-btn" id="like-btn-${v.id}" onclick="toggleLike('${v.id}',this,event)">
-          <div class="action-icon">🤍</div>
+        <div class="action-btn${liked ? ' liked' : ''}" id="like-btn-${v.id}" onclick="toggleLike('${v.id}',this,event)">
+          <div class="action-icon">${liked ? '❤️' : '🤍'}</div>
           <div class="action-count">${v.likes}</div>
         </div>
         <div class="action-btn" onclick="openComments('${v.id}',${v.comments},event)">
@@ -955,8 +1253,8 @@ function buildFeed(containerId, videoList) {
       </div>
       <div class="video-info">
         <div class="user-name">${v.user}</div>
-        <div class="video-desc">${buildDesc(v.desc)}</div>
-        <div class="music-row"><span class="note">♪</span><span>${v.music}</span></div>
+        <div class="video-desc">${buildDesc(d)}</div>
+        <div class="music-row"><span class="note">♪</span><span>${mu}</span></div>
       </div>`;
 
     let lastTap = 0;
@@ -1120,7 +1418,7 @@ function toggleFollow(btn, e) {
 
 function shareVideo(e) {
   e.stopPropagation();
-  alert('Share to:\nMessages · Stories · More · Copy link');
+  alert(t('alertShare'));
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1137,7 +1435,7 @@ function openComments(videoId, count, e) {
   currentCardId = videoId;
   document.getElementById('commentsSheet').classList.remove('on-top-of-cvfeed');
   document.getElementById('overlayBg').classList.remove('on-top-of-cvfeed');
-  document.getElementById('commentCount').textContent = `Comments ${fmtNum(count)}`;
+  document.getElementById('commentCount').textContent = fmtCommentsTitle(count);
   renderComments();
   document.getElementById('commentsSheet').classList.add('open');
   document.getElementById('overlayBg').classList.add('show');
@@ -1183,9 +1481,9 @@ function buildCommentVideoFeed() {
     empty.innerHTML = `
       <div class="cv-empty-placeholder">
         <div class="big">📹</div>
-        <h2>No comment media yet</h2>
-        <p>Only <strong>videos or AI GIFs posted in this thread’s comments</strong> show here —<br>no For You feed.</p>
-        <p>Go back → upload 📹, or use <strong>Generate GIF</strong>, then swipe left again.</p>
+        <h2>${escapeHtml(t('emptyCvTitle'))}</h2>
+        <p>${escapeHtml(t('emptyCvP1'))}</p>
+        <p>${escapeHtml(t('emptyCvP2'))}</p>
       </div>`;
     feed.appendChild(empty);
     return;
@@ -1202,14 +1500,14 @@ function buildCommentVideoFeed() {
       ? `<img class="video-fill" src="${c.gifSrc}" alt="" />`
       : `<video class="video-fill" src="${c.videoSrc}" playsinline loop controls preload="metadata"></video>`;
     const avatarIcon = isAiGif ? '✨' : (isAiClip ? '🎬' : '📹');
-    const badgeLine = isAiGif ? 'AI GIF · from prompt' : (isAiClip ? 'AI clip · WebM' : 'Comment videos · not For You');
-    const musicLine = isAiGif ? 'Generated from your prompt' : (isAiClip ? 'AI storyboard crossfade' : 'From comment uploads');
+    const badgeLine = isAiGif ? t('badgeLineAiGif') : (isAiClip ? t('badgeLineAiClip') : t('badgeLineVideo'));
+    const musicLine = isAiGif ? t('musicAiGif') : (isAiClip ? t('musicAiClip') : t('musicUpload'));
 
     const card = document.createElement('div');
     card.className = 'video-card';
     card.dataset.cvId = cvId;
     const cap = escapeHtml(c.caption || '');
-    const who = escapeHtml(c.displayUser || 'Me');
+    const who = escapeHtml(c.displayUser || t('displayMe'));
     card.innerHTML = `
       <div class="video-bg">
         ${mediaHtml}
@@ -1236,7 +1534,7 @@ function buildCommentVideoFeed() {
       <div class="video-info">
         <div class="cv-feed-badge">${badgeLine}</div>
         <div class="user-name">${who}</div>
-        <div class="video-desc">${cap || '<span>No caption</span>'}</div>
+        <div class="video-desc">${cap ? cap : ('<span>' + escapeHtml(t('noCaption')) + '</span>')}</div>
         <div class="music-row"><span class="note">♪</span><span>${musicLine}</span></div>
       </div>`;
 
@@ -1254,7 +1552,7 @@ function buildCommentVideoFeed() {
 function openCommentVideoFeed() {
   if (!currentCardId) return;
   if (String(currentCardId).startsWith('__cv__')) {
-    alert('Open comment videos from the main post’s comments, not a nested thread.');
+    alert(t('alertCvNested'));
     return;
   }
   const cvInline = document.getElementById('commentVideoFeedInline');
@@ -1278,7 +1576,7 @@ function closeCommentVideoFeed() {
     currentCardId = commentVideoParentId;
     const mv = mainVideos.find(x => x.id === commentVideoParentId);
     const count = mv ? mv.comments : 0;
-    document.getElementById('commentCount').textContent = `Comments ${fmtNum(count)}`;
+    document.getElementById('commentCount').textContent = fmtCommentsTitle(count);
     renderComments();
   }
 }
@@ -1289,7 +1587,7 @@ function openNestedComments(cvId, e) {
   closeCommentVideoFeed();
   currentCardId = '__cv__' + cvId;
   if (!commentStore[currentCardId]) commentStore[currentCardId] = [];
-  document.getElementById('commentCount').textContent = 'Comments 0';
+  document.getElementById('commentCount').textContent = fmtCommentsTitle(0);
   renderComments();
   document.getElementById('commentsSheet').classList.add('open', 'on-top-of-cvfeed');
   document.getElementById('overlayBg').classList.add('show', 'on-top-of-cvfeed');
@@ -1301,8 +1599,8 @@ function renderComments() {
   list.innerHTML = comments.map(c => {
     if (c.type === 'video') {
       const cap = c.caption ? escapeHtml(c.caption) : '';
-      const who = escapeHtml(c.displayUser || 'Me');
-      const vBadge = c.isAiClip ? 'AI clip (WebM)' : 'Video comment';
+      const who = escapeHtml(c.displayUser || t('displayMe'));
+      const vBadge = c.isAiClip ? t('badgeAiClip') : t('badgeVideoComment');
       const vAvatar = c.isAiClip ? '🎬' : '😊';
       return `
         <div class="comment-item">
@@ -1315,7 +1613,7 @@ function renderComments() {
               <div class="video-comment-badge">${vBadge}</div>
             </div>
             <div class="comment-footer">
-              <span class="comment-time">${c.time}</span>
+              <span class="comment-time">${escapeHtml(pickCommentTime(c))}</span>
               <span class="comment-like">❤️ 0</span>
             </div>
           </div>
@@ -1323,8 +1621,8 @@ function renderComments() {
     }
     if (c.type === 'aiGif') {
       const cap = c.caption ? escapeHtml(c.caption) : '';
-      const who = escapeHtml(c.displayUser || 'Me');
-      const badge = c.staticImage ? 'AI still' : 'AI GIF';
+      const who = escapeHtml(c.displayUser || t('displayMe'));
+      const badge = c.staticImage ? t('badgeAiStill') : t('badgeAiGif');
       return `
         <div class="comment-item">
           <div class="comment-avatar">✨</div>
@@ -1332,11 +1630,11 @@ function renderComments() {
             <div class="comment-name">${who}</div>
             ${cap ? `<div class="comment-text">${cap}</div>` : ''}
             <div class="comment-gif-wrap">
-              <img src="${c.gifSrc}" alt="AI generated" />
+              <img src="${c.gifSrc}" alt="${escapeHtml(t('badgeAiGif'))}" />
               <div class="video-comment-badge">${badge}</div>
             </div>
             <div class="comment-footer">
-              <span class="comment-time">${c.time}</span>
+              <span class="comment-time">${escapeHtml(pickCommentTime(c))}</span>
               <span class="comment-like">❤️ 0</span>
             </div>
           </div>
@@ -1347,9 +1645,9 @@ function renderComments() {
         <div class="comment-avatar">${c.avatar}</div>
         <div class="comment-body">
           <div class="comment-name">${escapeHtml(c.name)}</div>
-          <div class="comment-text">${escapeHtml(c.text)}</div>
+          <div class="comment-text">${escapeHtml(pickCommentText(c))}</div>
           <div class="comment-footer">
-            <span class="comment-time">${c.time}</span>
+            <span class="comment-time">${escapeHtml(pickCommentTime(c))}</span>
             <span class="comment-like">❤️ ${c.likes}</span>
           </div>
         </div>
@@ -1362,7 +1660,7 @@ function sendComment() {
   const text = input.value.trim();
   if (!text) return;
   if (!commentStore[currentCardId]) commentStore[currentCardId] = [...sampleComments];
-  commentStore[currentCardId].unshift({ avatar:'😊', name:'Me', text, time:'Just now', likes:'0' });
+  commentStore[currentCardId].unshift({ avatar:'😊', name:t('displayMe'), text, time:t('justNow'), likes:'0' });
   renderComments();
   input.value = '';
   document.getElementById('commentsList').scrollTop = 0;
@@ -1457,7 +1755,7 @@ async function loadStoryboardImages(userPrompt, onStatus) {
   const stages = buildStoryboardPrompts(userPrompt);
   const images = [];
   for (let s = 0; s < stages.length; s++) {
-    if (onStatus) onStatus('Keyframe ' + (s + 1) + '/4…');
+    if (onStatus) onStatus(tReplace('keyframeProgress', { n: s + 1 }));
     const stage = stages[s];
     const { blobUrl } = await fetchImageBlobUrlWithRetry(
       attempt => storyboardPollinationsUrl(stage, Date.now() + '-s' + s + '-a' + attempt + '-' + Math.random().toString(36).slice(2)),
@@ -1579,17 +1877,17 @@ async function startGifGeneration() {
   const ta = document.getElementById('gifPromptInput');
   const prompt = (ta && ta.value || '').trim();
   if (!prompt) {
-    alert('Please describe the GIF you want.');
+    alert(t('alertGifPrompt'));
     return;
   }
   if (!currentCardId || String(currentCardId).startsWith('__cv__')) {
-    alert('Open comments on a main video first.');
+    alert(t('alertCommentsFirst'));
     return;
   }
   const btn = document.getElementById('gifGenBtn');
   btn.disabled = true;
   const prevLabel = btn.textContent;
-  btn.textContent = 'Generating…';
+  btn.textContent = t('generating');
   try {
     const result = await generateGifFromPrompt(prompt);
     pendingGifResult = Object.assign({ prompt }, result);
@@ -1599,7 +1897,7 @@ async function startGifGeneration() {
     document.getElementById('gifGenModal').classList.add('show');
   } catch (e) {
     console.error(e);
-    alert(e.message || 'Generation failed.');
+    alert(e.message || t('generationFailed'));
   } finally {
     btn.disabled = false;
     btn.textContent = prevLabel;
@@ -1626,8 +1924,8 @@ function confirmGifPost() {
       cvId,
       gifSrc: pr.gifSrc,
       caption: pr.prompt,
-      time: 'Just now',
-      displayUser: 'Me',
+      time: t('justNow'),
+      displayUser: t('displayMe'),
       staticImage: false,
     });
   } else {
@@ -1636,8 +1934,8 @@ function confirmGifPost() {
       cvId,
       gifSrc: pr.imageUrl,
       caption: pr.prompt,
-      time: 'Just now',
-      displayUser: 'Me',
+      time: t('justNow'),
+      displayUser: t('displayMe'),
       staticImage: true,
     });
   }
@@ -1856,14 +2154,14 @@ async function generateShortClipFromPrompt(prompt, onStatus) {
   try {
     const keyframes = await loadStoryboardImages(prompt, onStatus);
     if (keyframes.length >= 2) {
-      if (onStatus) onStatus('Recording motion…');
+      if (onStatus) onStatus(t('recordingMotion'));
       const videoSrc = await recordCrossfadeWebM(keyframes, { width: 360, height: 640, fps: 24, durationSec: 6 });
       return { videoSrc, mode: 'storyboard' };
     }
   } catch (e) {
     console.warn('Storyboard clip failed, using zoom fallback:', e);
   }
-  if (onStatus) onStatus('Fallback: zoom on one image…');
+  if (onStatus) onStatus(t('fallbackZoom'));
   const { blobUrl } = await fetchPollinationsImageBlobUrl(prompt, 5);
   const img = new Image();
   await new Promise((resolve, reject) => {
@@ -1885,11 +2183,11 @@ async function startClipGeneration() {
   const ta = document.getElementById('gifPromptInput');
   const prompt = (ta && ta.value || '').trim();
   if (!prompt) {
-    alert('Please describe the clip you want (same box as GIF).');
+    alert(t('alertClipPrompt'));
     return;
   }
   if (!currentCardId || String(currentCardId).startsWith('__cv__')) {
-    alert('Open comments on a main video first.');
+    alert(t('alertCommentsFirst'));
     return;
   }
   const gifBtn = document.getElementById('gifGenBtn');
@@ -1897,7 +2195,7 @@ async function startClipGeneration() {
   gifBtn.disabled = true;
   clipBtn.disabled = true;
   const prevClip = clipBtn.textContent;
-  clipBtn.textContent = 'Starting…';
+  clipBtn.textContent = t('starting');
   try {
     const { videoSrc } = await generateShortClipFromPrompt(prompt, msg => {
       clipBtn.textContent = msg;
@@ -1910,7 +2208,7 @@ async function startClipGeneration() {
     document.getElementById('clipGenModal').classList.add('show');
   } catch (e) {
     console.error(e);
-    alert(e.message || 'Clip generation failed.');
+    alert(e.message || t('clipGenFailed'));
   } finally {
     gifBtn.disabled = false;
     clipBtn.disabled = false;
@@ -1939,8 +2237,8 @@ function confirmClipPost() {
     cvId,
     videoSrc: pr.videoSrc,
     caption: pr.prompt,
-    time: 'Just now',
-    displayUser: 'Me',
+    time: t('justNow'),
+    displayUser: t('displayMe'),
     isAiClip: true,
   });
   pendingClipResult = null;
@@ -1993,8 +2291,8 @@ function confirmVideoUpload() {
     cvId,
     videoSrc: pendingVideoURL,
     caption,
-    time: 'Just now',
-    displayUser: 'Me',
+    time: t('justNow'),
+    displayUser: t('displayMe'),
   });
   pendingVideoURL = null;
   pendingVideoBlob = null;
@@ -2024,8 +2322,7 @@ function switchNav(el) {
 /* ═══════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════ */
-buildFeed('feed0', mainVideos);
-buildFeed('feed1', secondaryVideos);
+refreshAllCopy();
 goToScreen(0);
 
 document.getElementById('commentInput').addEventListener('keydown', e => {
