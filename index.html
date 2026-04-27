@@ -648,6 +648,60 @@
     .global-mode-fab .fab-lang { min-width: 52px; }
     .global-mode-fab .fab-brand { letter-spacing: .02em; }
 
+    /* ═══════════════════════════════
+       SHEET TABS (Comments / Videos)
+    ═══════════════════════════════ */
+    .sheet-tabs {
+      display: flex;
+      border-bottom: 1px solid #2a2a2a;
+      flex-shrink: 0;
+    }
+    .sheet-tab {
+      flex: 1; text-align: center; padding: 10px 0;
+      font-size: 14px; font-weight: 600;
+      color: rgba(255,255,255,.4); cursor: pointer;
+      transition: color .2s;
+    }
+    .sheet-tab.active {
+      color: #fff;
+      border-bottom: 2px solid #fff;
+    }
+
+    /* Location line in sheet header */
+    .sheet-location {
+      font-size: 12px; color: rgba(255,255,255,.42);
+      padding: 2px 16px 10px; text-align: center;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+
+    /* Emoji reactions row */
+    .emoji-reactions {
+      display: flex; gap: 0; padding: 6px 10px;
+      border-top: 1px solid #222;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      flex-shrink: 0;
+    }
+    .emoji-reactions::-webkit-scrollbar { display: none; }
+    .emoji-reactions span {
+      font-size: 26px; padding: 4px 6px; cursor: pointer;
+      border-radius: 8px; flex-shrink: 0;
+      transition: background .15s; user-select: none;
+    }
+    .emoji-reactions span:active { background: #2a2a2a; transform: scale(1.2); }
+
+    /* Input icon buttons (@ and emoji, replacing bulky send btn) */
+    .input-icon-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px; cursor: pointer; flex-shrink: 0;
+      color: rgba(255,255,255,.6);
+      transition: color .15s;
+    }
+    .input-icon-btn:active { color: #fff; }
+
+    /* Bookmarked state */
+    .action-btn.bookmarked .action-icon { filter: drop-shadow(0 0 6px #ffd43b); }
+
     /* Douyin-style accent (demo only — not affiliated) */
     .app.douyin .top-nav .tab.active::after {
       background: #fe2c55;
@@ -708,7 +762,7 @@
           <div class="nav-icon">🏠</div><div class="nav-label" data-i18n="navHome">Home</div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">🔍</div><div class="nav-label" data-i18n="navExplore">Explore</div>
+          <div class="nav-icon">👥</div><div class="nav-label" data-i18n="navFriends">Friends</div>
         </div>
         <div class="nav-item">
           <div class="post-btn" onclick="alertCreatePost()">
@@ -719,7 +773,7 @@
           <div class="nav-icon">💬</div><div class="nav-label" data-i18n="navInbox">Inbox</div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">👤</div><div class="nav-label" data-i18n="navProfile">Profile</div>
+          <div class="nav-icon">👤</div><div class="nav-label" data-i18n="navMe">Me</div>
         </div>
       </div>
     </div>
@@ -742,7 +796,7 @@
           <div class="nav-icon">🏠</div><div class="nav-label" data-i18n="navHome">Home</div>
         </div>
         <div class="nav-item active" onclick="switchNav(this)">
-          <div class="nav-icon">🔍</div><div class="nav-label" data-i18n="navExplore">Explore</div>
+          <div class="nav-icon">👥</div><div class="nav-label" data-i18n="navFriends">Friends</div>
         </div>
         <div class="nav-item">
           <div class="post-btn" onclick="alertCreatePost()">
@@ -753,7 +807,7 @@
           <div class="nav-icon">💬</div><div class="nav-label" data-i18n="navInbox">Inbox</div>
         </div>
         <div class="nav-item" onclick="switchNav(this)">
-          <div class="nav-icon">👤</div><div class="nav-label" data-i18n="navProfile">Profile</div>
+          <div class="nav-icon">👤</div><div class="nav-label" data-i18n="navMe">Me</div>
         </div>
       </div>
     </div>
@@ -765,7 +819,12 @@
   <div class="comments-sheet" id="commentsSheet">
     <div class="sheet-header">
       <div class="sheet-title" id="commentCount">Comments 128</div>
+      <div class="sheet-location" id="sheetLocation">📍 <span id="sheetLocationText">Location</span></div>
       <div class="sheet-close" onclick="closeComments()">✕</div>
+    </div>
+    <div class="sheet-tabs">
+      <div class="sheet-tab active" id="tab-comments" onclick="switchSheetTab('comments')">Comments</div>
+      <div class="sheet-tab" id="tab-videos" onclick="switchSheetTab('videos')">Videos</div>
     </div>
     <div class="sheet-swipe-row" id="sheetSwipeHint" data-i18n="sheetSwipeHint">← Swipe left on the bar below (not the list) for fullscreen comment videos</div>
     <button type="button" class="sheet-open-feed-bar" id="sheetOpenFeedBar" onclick="openCommentVideoFeedFromBar(event)">
@@ -780,10 +839,22 @@
         <button type="button" class="clip-gen-btn" id="clipGenBtn" data-i18n="clipBtn" onclick="startClipGeneration()">🎬 Clip</button>
       </div>
     </div>
+    <div class="emoji-reactions" id="emojiReactions">
+      <span onclick="addEmojiReaction('😊')">😊</span>
+      <span onclick="addEmojiReaction('🥰')">🥰</span>
+      <span onclick="addEmojiReaction('😂')">😂</span>
+      <span onclick="addEmojiReaction('😮')">😮</span>
+      <span onclick="addEmojiReaction('😏')">😏</span>
+      <span onclick="addEmojiReaction('😅')">😅</span>
+      <span onclick="addEmojiReaction('🥺')">🥺</span>
+      <span onclick="addEmojiReaction('💀')">💀</span>
+      <span onclick="addEmojiReaction('🔥')">🔥</span>
+    </div>
     <div class="sheet-input">
       <div class="upload-video-btn" id="uploadVideoBtn" onclick="triggerVideoUpload()" data-i18n-title="uploadVideoTitle" title="Upload video comment">📹</div>
-      <input type="text" id="commentInput" data-i18n-placeholder="commentPlaceholder" placeholder="Write a comment or upload a video 📹" />
-      <div class="send-btn" onclick="sendComment()">➤</div>
+      <input type="text" id="commentInput" placeholder="Add comment..." onkeydown="if(event.key==='Enter')sendComment()" />
+      <div class="input-icon-btn" onclick="document.getElementById('commentInput').value+='@'">@</div>
+      <div class="input-icon-btn" onclick="sendComment()" title="Send">😊</div>
     </div>
   </div>
 
@@ -880,31 +951,36 @@ const mainVideos = [
     desc:'Late-night waves are so healing 🌙 #nightvibes #ocean',
     descZh:'深夜海浪太治愈了 🌙 #夜拍 #海洋',
     music:'Waves — ambient', musicZh:'海浪 — 氛围',
-    likes:'324k', comments:4218, shares:'12k' },
+    likes:'324k', comments:4218, bookmarks:'18.2k', shares:'12k',
+    location:'Malibu Beach', locationCount:'5,231' },
   { id:'m2', bg:'linear-gradient(135deg,#f093fb,#f5576c,#4facfe)', emoji:'🌸',
     user:'@sakura_daily', avatar:'🌸', avatarBg:'linear-gradient(135deg,#f093fb,#f5576c)',
     desc:'Kyoto cherry season — I come every year 📷✨ #japan #sakura',
     descZh:'京都樱花季，每年都来 📷✨ #日本 #樱花',
     music:'Spring Day — indie', musicZh:'春日 — 独立民谣',
-    likes:'881k', comments:9832, shares:'56k' },
+    likes:'881k', comments:9832, bookmarks:'72.7k', shares:'56k',
+    location:'Maruyama Park · Kyoto', locationCount:'14,880' },
   { id:'m3', bg:'linear-gradient(135deg,#43e97b,#38f9d7)', emoji:'🍜',
     user:'@foodie_life', avatar:'🍜', avatarBg:'linear-gradient(135deg,#43e97b,#38f9d7)',
     desc:'Hand-pulled noodles at home — full recipe below 👇 #food #cooking',
     descZh:'在家手拉面，完整食谱见下方 👇 #美食 #料理',
     music:'Street Food — folk', musicZh:'街市小吃 — 民谣',
-    likes:'217k', comments:3301, shares:'89k' },
+    likes:'217k', comments:3301, bookmarks:'41.5k', shares:'89k',
+    location:'Home Kitchen', locationCount:'2,104' },
   { id:'m4', bg:'linear-gradient(135deg,#fa709a,#fee140)', emoji:'🐱',
     user:'@catworld_zzz', avatar:'🐱', avatarBg:'linear-gradient(135deg,#fa709a,#fee140)',
     desc:'My orange cat found the snacks 🍪😂 #cats #orangecat',
     descZh:'我家橘猫偷吃零食 🍪😂 #猫 #橘猫',
     music:'Meow Mix — parody', musicZh:'喵喵混音 — 搞笑',
-    likes:'1.56M', comments:24100, shares:'120k' },
+    likes:'1.56M', comments:24100, bookmarks:'132k', shares:'120k',
+    location:'Living Room', locationCount:'9,110' },
   { id:'m5', bg:'linear-gradient(135deg,#4facfe,#00f2fe)', emoji:'🏔️',
     user:'@mountain_trek', avatar:'🏔️', avatarBg:'linear-gradient(135deg,#4facfe,#00f2fe)',
     desc:'4800m — clouds under my feet ⛰️🌤️ #hiking #tibet',
     descZh:'海拔4800米，脚下云海 ⛰️🌤️ #徒步 #高原',
     music:'The World — rock', musicZh:'世界 — 摇滚',
-    likes:'453k', comments:6723, shares:'34k' },
+    likes:'453k', comments:6723, bookmarks:'55.9k', shares:'34k',
+    location:'Tibetan Plateau', locationCount:'3,449' },
 ];
 
 const secondaryVideos = [
@@ -961,8 +1037,10 @@ const STRINGS = {
     tabFyp: 'For You',
     tabFriends: 'Friends',
     navHome: 'Home',
+    navFriends: 'Friends',
     navExplore: 'Explore',
     navInbox: 'Inbox',
+    navMe: 'Me',
     navProfile: 'Profile',
     hintBackFyp: '← For You',
     secBack: '‹ For You',
@@ -1028,9 +1106,11 @@ const STRINGS = {
     tabFyp: '推荐',
     tabFriends: '朋友',
     navHome: '首页',
+    navFriends: '朋友',
     navExplore: '发现',
     navInbox: '消息',
-    navProfile: '我',
+    navMe: '我',
+    navProfile: '个人',
     hintBackFyp: '← 推荐',
     secBack: '‹ 推荐',
     secTitleRelated: '相关',
@@ -1256,9 +1336,13 @@ function buildFeed(containerId, videoList) {
           <div class="action-icon">${liked ? '❤️' : '🤍'}</div>
           <div class="action-count">${v.likes}</div>
         </div>
-        <div class="action-btn" onclick="openComments('${v.id}',${v.comments},event)">
+        <div class="action-btn" onclick="openComments('${v.id}',${v.comments},event,'${v.location || ''}','${v.locationCount || ''}')">
           <div class="action-icon">💬</div>
           <div class="action-count">${fmtNum(v.comments)}</div>
+        </div>
+        <div class="action-btn" id="bmark-btn-${v.id}" onclick="toggleBookmark('${v.id}',this,event)">
+          <div class="action-icon">🔖</div>
+          <div class="action-count">${v.bookmarks || '—'}</div>
         </div>
         <div class="action-btn" onclick="shareVideo(event)">
           <div class="action-icon">➦</div>
@@ -1439,12 +1523,21 @@ function shareVideo(e) {
 /* ═══════════════════════════════════════════════════
    COMMENTS
 ═══════════════════════════════════════════════════ */
-function openComments(videoId, count, e) {
+function openComments(videoId, count, e, location, locationCount) {
   e.stopPropagation();
   currentCardId = videoId;
   document.getElementById('commentsSheet').classList.remove('on-top-of-cvfeed');
   document.getElementById('overlayBg').classList.remove('on-top-of-cvfeed');
   document.getElementById('commentCount').textContent = fmtCommentsTitle(count);
+  const locText = document.getElementById('sheetLocationText');
+  const locLine = document.getElementById('sheetLocation');
+  if (location) {
+    locText.textContent = location + (locationCount ? ' · ' + locationCount + ' people posted' : '');
+    locLine.style.display = '';
+  } else {
+    locLine.style.display = 'none';
+  }
+  switchSheetTab('comments');
   renderComments();
   document.getElementById('commentsSheet').classList.add('open');
   document.getElementById('overlayBg').classList.add('show');
@@ -2495,6 +2588,53 @@ function commentSheetSwipeGestureBlocked(target) {
     if (dx > SHEET_SWIPE_THRESHOLD) closeCommentVideoFeed();
   });
 })();
+
+/* ═══════════════════════════════════════════════════
+   BOOKMARK
+═══════════════════════════════════════════════════ */
+const currentBookmarks = {};
+function toggleBookmark(id, btn, e) {
+  e.stopPropagation();
+  currentBookmarks[id] = !currentBookmarks[id];
+  const icon = btn.querySelector('.action-icon');
+  if (currentBookmarks[id]) {
+    btn.classList.add('bookmarked');
+    icon.textContent = '🔖';
+  } else {
+    btn.classList.remove('bookmarked');
+    icon.textContent = '🔖';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   COMMENTS SHEET TABS
+═══════════════════════════════════════════════════ */
+function switchSheetTab(tab) {
+  document.getElementById('tab-comments').classList.toggle('active', tab === 'comments');
+  document.getElementById('tab-videos').classList.toggle('active', tab === 'videos');
+  const list = document.getElementById('commentsList');
+  const gifPanel = document.querySelector('.ai-gif-panel');
+  const emojiRow = document.getElementById('emojiReactions');
+  if (tab === 'videos') {
+    list.style.opacity = '0.4';
+    if (gifPanel) gifPanel.style.display = 'none';
+    if (emojiRow) emojiRow.style.display = 'none';
+    openCommentVideoFeed();
+  } else {
+    list.style.opacity = '';
+    if (gifPanel) gifPanel.style.display = '';
+    if (emojiRow) emojiRow.style.display = '';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   EMOJI REACTIONS
+═══════════════════════════════════════════════════ */
+function addEmojiReaction(emoji) {
+  const input = document.getElementById('commentInput');
+  input.value += emoji;
+  input.focus();
+}
 </script>
 </body>
 </html>
