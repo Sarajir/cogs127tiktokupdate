@@ -600,6 +600,31 @@
     }
     #commentVideoFeedLayer .cv-swipe-hint.visible { opacity: 1; }
 
+    #commentVideoFeedLayer .cv-layer-top-cluster {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-28%);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 2;
+    }
+    #commentVideoFeedLayer .cv-home-chip {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(254,44,85,.55);
+      background: rgba(254,44,85,.22);
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #commentVideoFeedLayer .cv-home-chip:active { filter: brightness(1.12); transform: scale(.97); }
+
     .cv-feed-badge {
       font-size: 11px; color: rgba(255,255,255,.55);
       background: rgba(254,44,85,.25); padding: 3px 8px; border-radius: 4px;
@@ -880,7 +905,10 @@
   <div id="commentVideoFeedLayer">
     <div class="cv-swipe-hint" id="cvSwipeHint" data-i18n="cvSwipeHint">← Swipe right for comments</div>
     <div class="top-nav" style="padding-top:44px;">
-      <div class="live-btn" onclick="closeCommentVideoFeed()" data-i18n="cvBack">Back</div>
+      <div class="cv-layer-top-cluster">
+        <div class="live-btn" onclick="closeCommentVideoFeed()" data-i18n="cvBack">Back</div>
+        <button type="button" class="cv-home-chip" onclick="exitCommentVideoFeedToHome()" data-i18n="cvHome" data-i18n-title="cvHomeTitle" title="Home">Home</button>
+      </div>
       <div class="tab" onclick="void(0)" data-i18n="tabFollowing">Following</div>
       <div class="tab active" onclick="void(0)" data-i18n="cvTabCommentVideos">Comment videos</div>
       <div class="tab" onclick="void(0)" data-i18n="tabFriends">Friends</div>
@@ -1138,6 +1166,8 @@ const STRINGS = {
     previewPostVideo: 'Post video comment',
     cvSwipeHint: '← Swipe right for comments',
     cvBack: 'Back',
+    cvHome: 'Home',
+    cvHomeTitle: 'Leave comments and open the For You feed (first column)',
     cvTabCommentVideos: 'Comment videos',
     cvNavCommentVideos: 'Comment videos',
     cvNavUpload: 'Upload',
@@ -1207,6 +1237,8 @@ const STRINGS = {
     previewPostVideo: '发布视频评论',
     cvSwipeHint: '← 右滑返回评论',
     cvBack: '返回',
+    cvHome: '首页',
+    cvHomeTitle: '关闭评论并回到推荐首页（第一列）',
     cvTabCommentVideos: '评论视频',
     cvNavCommentVideos: '评论视频',
     cvNavUpload: '上传',
@@ -1762,6 +1794,32 @@ function closeCommentVideoFeed() {
     renderComments();
     document.getElementById('commentsSheet').classList.add('open');
     document.getElementById('overlayBg').classList.add('show');
+  }
+}
+
+/** One tap: leave comment-video fullscreen, close comments, go to For You (column 0) and scroll home feed to top. */
+function exitCommentVideoFeedToHome() {
+  pauseAllCommentFeedVideos();
+  const layer = document.getElementById('commentVideoFeedLayer');
+  const inline = document.getElementById('commentVideoFeedInline');
+  if (layer && layer.classList.contains('open')) {
+    layer.classList.remove('open');
+    document.querySelector('.app').classList.remove('hide-section-pill');
+    closeComments();
+    commentVideoParentId = null;
+    goToScreen(0);
+    const f0 = document.getElementById('feed0');
+    if (f0) f0.scrollTop = 0;
+    return;
+  }
+  if (inline && inline.classList.contains('open')) {
+    inline.classList.remove('open');
+    inline.setAttribute('aria-hidden', 'true');
+    closeComments();
+    commentVideoParentId = null;
+    goToScreen(0);
+    const f0 = document.getElementById('feed0');
+    if (f0) f0.scrollTop = 0;
   }
 }
 

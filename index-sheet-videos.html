@@ -385,7 +385,27 @@
       -webkit-tap-highlight-color: transparent;
     }
     .cv-inline-back:active { filter: brightness(1.12); }
-    .cv-inline-title { font-size: 12px; font-weight: 700; color: rgba(255, 255, 255, .5); }
+    .cv-inline-title {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, .5);
+    }
+    .cv-inline-home {
+      flex-shrink: 0;
+      border: none;
+      background: rgba(254, 44, 85, .38);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cv-inline-home:active { filter: brightness(1.1); }
 
     .cv-inline-feed {
       flex: 1;
@@ -842,6 +862,7 @@
         <div class="cv-inline-toolbar">
           <button type="button" class="cv-inline-back" onclick="closeCommentVideoFeed()" data-i18n="cvInlineBack">← Comments</button>
           <span class="cv-inline-title" data-i18n="cvInlineTitle">Videos in this thread</span>
+          <button type="button" class="cv-inline-home" onclick="exitCommentVideoFeedToHome()" data-i18n="cvHome" data-i18n-title="cvHomeTitle" title="Home">Home</button>
         </div>
         <div class="feed cv-inline-feed" id="commentVideoFeed"></div>
       </div>
@@ -1080,6 +1101,8 @@ const STRINGS = {
     cvSwipeHintInline: 'Swipe right → comments',
     cvInlineBack: '← Comments',
     cvInlineTitle: 'Videos in this thread',
+    cvHome: 'Home',
+    cvHomeTitle: 'Close sheet and go to For You (first column)',
     gifLabel: 'Describe a GIF or a short clip (English works best)',
     gifPlaceholder: 'e.g. A cute strawberry sitting on a basketball, cartoon style, bright colors',
     gifBtn: '✨ GIF',
@@ -1144,6 +1167,8 @@ const STRINGS = {
     cvSwipeHintInline: '右滑返回评论',
     cvInlineBack: '← 评论',
     cvInlineTitle: '本串内的视频',
+    cvHome: '首页',
+    cvHomeTitle: '关闭面板并回到推荐首页（第一列）',
     gifLabel: '描述想要的 GIF 或短视频（英文提示词通常效果更好）',
     gifPlaceholder: '例如：一颗草莓坐在篮球上，卡通风格，色彩明亮',
     gifBtn: '✨ GIF',
@@ -1690,6 +1715,32 @@ function closeCommentVideoFeed() {
     const count = mv ? mv.comments : 0;
     document.getElementById('commentCount').textContent = fmtCommentsTitle(count);
     renderComments();
+  }
+}
+
+/** Close comment-video strip + whole comments sheet, return to For You (column 0) and scroll feed to top. */
+function exitCommentVideoFeedToHome() {
+  pauseAllCommentFeedVideos();
+  const layer = document.getElementById('commentVideoFeedLayer');
+  const inline = document.getElementById('commentVideoFeedInline');
+  if (layer && layer.classList.contains('open')) {
+    layer.classList.remove('open');
+    document.querySelector('.app').classList.remove('hide-section-pill');
+    closeComments();
+    commentVideoParentId = null;
+    goToScreen(0);
+    const f0 = document.getElementById('feed0');
+    if (f0) f0.scrollTop = 0;
+    return;
+  }
+  if (inline && inline.classList.contains('open')) {
+    inline.classList.remove('open');
+    inline.setAttribute('aria-hidden', 'true');
+    closeComments();
+    commentVideoParentId = null;
+    goToScreen(0);
+    const f0 = document.getElementById('feed0');
+    if (f0) f0.scrollTop = 0;
   }
 }
 
@@ -2592,7 +2643,7 @@ function commentSheetSwipeGestureBlocked(target) {
   let cvMouseDown = false, cvMouseStartX = 0;
   layer.addEventListener('mousedown', e => {
     if (!layer.classList.contains('open')) return;
-    if (e.target.closest('.cv-inline-toolbar,.cv-inline-back,video,.action-btn')) return;
+    if (e.target.closest('.cv-inline-toolbar,.cv-inline-back,.cv-inline-home,video,.action-btn')) return;
     cvMouseDown = true;
     cvMouseStartX = e.clientX;
   });
