@@ -1025,6 +1025,55 @@ const sampleComments = [
   { avatar:'🌈', name:'RainbowRun', text:'Shared with friends — everyone loved it!', textZh:'转给朋友了，大家都说绝', time:'2d ago', timeZh:'2天前', likes:'190' },
 ];
 
+/**
+ * Built-in demo replies with real MP4 / image URLs (CC0 or common samples).
+ * Same set is merged into every main/secondary feed card on first load.
+ */
+function makeDemoMediaRows(videoId) {
+  const vid = String(videoId);
+  return [
+    {
+      type: 'video',
+      cvId: 'demo-' + vid + '-flower',
+      videoSrc: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+      caption: 'CC0 sample clip (flower) — built-in demo reply',
+      captionZh: 'CC0 示例短片（花朵）— 内置演示评论',
+      time: '2h ago',
+      timeZh: '2小时前',
+      displayUser: '@demo_clips',
+    },
+    {
+      type: 'video',
+      cvId: 'demo-' + vid + '-bbb',
+      videoSrc: 'https://www.w3schools.com/html/mov_bbb.mp4',
+      caption: 'Big Buck Bunny cut (embed test)',
+      captionZh: 'Big Buck Bunny 片段（嵌入测试）',
+      time: '4h ago',
+      timeZh: '4小时前',
+      displayUser: '@open_clip',
+    },
+    {
+      type: 'aiGif',
+      cvId: 'demo-' + vid + '-still',
+      gifSrc: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/600px-Cat03.jpg',
+      staticImage: true,
+      caption: 'Demo image reply (shown as AI still)',
+      captionZh: '演示图片回复（显示为 AI 静图）',
+      time: '6h ago',
+      timeZh: '6小时前',
+      displayUser: '@photo_lab',
+    },
+  ];
+}
+
+function buildInitialCommentThread(videoId) {
+  if (String(videoId).startsWith('__cv__')) return [];
+  const textRows = sampleComments.map(c => ({...c}));
+  const isCard = mainVideos.some(v => v.id === videoId) || secondaryVideos.some(v => v.id === videoId);
+  if (!isCard) return textRows;
+  return [...makeDemoMediaRows(videoId).map(c => ({...c})), ...textRows];
+}
+
 /* ═══ Locale & brand (TikTok ↔ 抖音) — educational UI only ═══ */
 let appLocale = localStorage.getItem('svd_locale') || 'en';
 let appBrand = localStorage.getItem('svd_brand') || 'tiktok';
@@ -1199,6 +1248,11 @@ function pickCommentTime(c) {
   return (appLocale === 'zh' && c.timeZh) ? c.timeZh : c.time;
 }
 
+function pickMediaCaption(c) {
+  if (!c || (c.type !== 'video' && c.type !== 'aiGif')) return '';
+  return (appLocale === 'zh' && c.captionZh) ? c.captionZh : (c.caption || '');
+}
+
 function applyDataI18nAttrs() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const k = el.getAttribute('data-i18n');
@@ -1312,7 +1366,7 @@ function buildFeed(containerId, videoList) {
   const feed = document.getElementById(containerId);
   videoList.forEach(v => {
     if (currentLikes[v.id] === undefined) currentLikes[v.id] = false;
-    if (!commentStore[v.id]) commentStore[v.id] = [...sampleComments.map(c => ({...c}))];
+    if (!commentStore[v.id]) commentStore[v.id] = buildInitialCommentThread(v.id);
 
     const liked = !!currentLikes[v.id];
     const d = pickVideoDesc(v);
@@ -1604,7 +1658,8 @@ function buildCommentVideoFeed() {
     const card = document.createElement('div');
     card.className = 'video-card';
     card.dataset.cvId = cvId;
-    const cap = escapeHtml(c.caption || '');
+    const capRaw = pickMediaCaption(c);
+    const cap = escapeHtml(capRaw || '');
     const who = escapeHtml(c.displayUser || t('displayMe'));
     card.innerHTML = `
       <div class="video-bg">
@@ -1696,7 +1751,8 @@ function renderComments() {
   const comments = commentStore[currentCardId] || sampleComments;
   list.innerHTML = comments.map(c => {
     if (c.type === 'video') {
-      const cap = c.caption ? escapeHtml(c.caption) : '';
+      const capLine = pickMediaCaption(c);
+      const cap = capLine ? escapeHtml(capLine) : '';
       const who = escapeHtml(c.displayUser || t('displayMe'));
       const vBadge = c.isAiClip ? t('badgeAiClip') : t('badgeVideoComment');
       const vAvatar = c.isAiClip ? '🎬' : '😊';
@@ -1718,7 +1774,8 @@ function renderComments() {
         </div>`;
     }
     if (c.type === 'aiGif') {
-      const cap = c.caption ? escapeHtml(c.caption) : '';
+      const capLineG = pickMediaCaption(c);
+      const cap = capLineG ? escapeHtml(capLineG) : '';
       const who = escapeHtml(c.displayUser || t('displayMe'));
       const badge = c.staticImage ? t('badgeAiStill') : t('badgeAiGif');
       return `
@@ -1757,7 +1814,7 @@ function sendComment() {
   const input = document.getElementById('commentInput');
   const text = input.value.trim();
   if (!text) return;
-  if (!commentStore[currentCardId]) commentStore[currentCardId] = [...sampleComments];
+  if (!commentStore[currentCardId]) commentStore[currentCardId] = buildInitialCommentThread(currentCardId);
   commentStore[currentCardId].unshift({ avatar:'😊', name:t('displayMe'), text, time:t('justNow'), likes:'0' });
   renderComments();
   input.value = '';
@@ -2014,7 +2071,7 @@ function cancelGifGeneration() {
 function confirmGifPost() {
   if (!pendingGifResult || !currentCardId) return;
   const pr = pendingGifResult;
-  if (!commentStore[currentCardId]) commentStore[currentCardId] = [...sampleComments];
+  if (!commentStore[currentCardId]) commentStore[currentCardId] = buildInitialCommentThread(currentCardId);
   const cvId = 'cv-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
   if (pr.mode === 'gif' && pr.gifSrc) {
     commentStore[currentCardId].unshift({
@@ -2328,7 +2385,7 @@ function cancelClipGeneration() {
 function confirmClipPost() {
   if (!pendingClipResult || !currentCardId) return;
   const pr = pendingClipResult;
-  if (!commentStore[currentCardId]) commentStore[currentCardId] = [...sampleComments];
+  if (!commentStore[currentCardId]) commentStore[currentCardId] = buildInitialCommentThread(currentCardId);
   const cvId = 'cv-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
   commentStore[currentCardId].unshift({
     type: 'video',
@@ -2382,7 +2439,7 @@ function cancelVideoUpload() {
 function confirmVideoUpload() {
   if (!pendingVideoURL || !currentCardId) return;
   const caption = document.getElementById('previewCaption').value.trim();
-  if (!commentStore[currentCardId]) commentStore[currentCardId] = [...sampleComments];
+  if (!commentStore[currentCardId]) commentStore[currentCardId] = buildInitialCommentThread(currentCardId);
   const cvId = 'cv-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
   commentStore[currentCardId].unshift({
     type: 'video',
