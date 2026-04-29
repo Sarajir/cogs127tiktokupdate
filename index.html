@@ -600,6 +600,46 @@
     }
     #commentVideoFeedLayer .cv-swipe-hint.visible { opacity: 1; }
 
+    /* Edge pads: video steals touches; swipe here for horizontal nav */
+    #commentVideoFeedLayer .cv-swipe-pad-thread {
+      position: absolute;
+      z-index: 120;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    #commentVideoFeedLayer.cv-culture-active .cv-swipe-pad-thread {
+      visibility: hidden;
+      pointer-events: none;
+    }
+    #commentVideoFeedLayer .cv-swipe-pad-thread-left {
+      left: 0;
+      top: 96px;
+      bottom: 72px;
+      width: 44px;
+    }
+    #commentVideoFeedLayer .cv-swipe-pad-thread-right {
+      right: 0;
+      top: 36%;
+      height: 28%;
+      width: 40px;
+    }
+    #commentVideoFeedLayer #commentVideoFeed.feed {
+      touch-action: pan-y;
+    }
+
+    #commentVideoFeedLayer .cv-culture-swipe-edge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 44px;
+      z-index: 6;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
     #commentVideoFeedLayer .cv-layer-top-cluster {
       position: absolute;
       left: 12px;
@@ -1058,12 +1098,13 @@
         <button type="button" class="cv-home-chip" onclick="exitCommentVideoFeedToHome()" data-i18n="cvHome" data-i18n-title="cvHomeTitle" title="">Home</button>
       </div>
       <div class="tab" onclick="void(0)" data-i18n="tabFollowing">Following</div>
-      <div class="tab active" onclick="void(0)" data-i18n="cvTabCommentVideos">Comment videos</div>
+      <div class="tab active" onclick="void(0)" data-i18n="cvTabPopularVideos">Hottest replies</div>
       <div class="tab" onclick="void(0)" data-i18n="tabFriends">Friends</div>
       <div class="search-icon" id="cvSearchInfo" onclick="alertCommentInfo()">ℹ️</div>
     </div>
     <div class="feed" id="commentVideoFeed"></div>
     <div id="cvCulturePanel" class="cv-culture-panel" aria-hidden="true">
+      <div class="cv-culture-swipe-edge" id="cvCultureSwipeEdge" aria-hidden="true"></div>
       <div class="cv-culture-header">
         <button type="button" class="cv-culture-back" onclick="closeCultureGrid()" data-i18n="cultureBack" data-i18n-title="cultureBackTitle">Videos</button>
         <div class="cv-culture-head-text">
@@ -1094,6 +1135,8 @@
         <div class="nav-icon">👤</div><div class="nav-label" data-i18n="navProfile">Profile</div>
       </div>
     </div>
+    <div class="cv-swipe-pad-thread cv-swipe-pad-thread-left" id="cvSwipePadThreadLeft" aria-hidden="true" title=""></div>
+    <div class="cv-swipe-pad-thread cv-swipe-pad-thread-right" id="cvSwipePadThreadRight" aria-hidden="true" title=""></div>
   </div>
 
   <!-- AI GIF preview before posting -->
@@ -1229,6 +1272,7 @@ function makeDemoMediaRows(videoId) {
       time: '2h ago',
       timeZh: '2小时前',
       displayUser: '@demo_clips',
+      popularRoot: true,
     },
     {
       type: 'video',
@@ -1239,6 +1283,7 @@ function makeDemoMediaRows(videoId) {
       time: '4h ago',
       timeZh: '4小时前',
       displayUser: '@open_clip',
+      replyToCvId: 'demo-' + vid + '-flower',
     },
     {
       type: 'video',
@@ -1249,6 +1294,7 @@ function makeDemoMediaRows(videoId) {
       time: '5h ago',
       timeZh: '5小时前',
       displayUser: '@upload_bot_a',
+      replyToCvId: 'demo-' + vid + '-flower',
     },
     {
       type: 'video',
@@ -1259,6 +1305,7 @@ function makeDemoMediaRows(videoId) {
       time: '7h ago',
       timeZh: '7小时前',
       displayUser: '@drive_clip',
+      replyToCvId: 'demo-' + vid + '-flower',
     },
     {
       type: 'video',
@@ -1312,7 +1359,7 @@ const STRINGS = {
     hintBackFyp: '← For You',
     secBack: '‹ For You',
     secTitleRelated: 'Related',
-    sheetSwipeHint: '← Swipe left on the bar below (not the list) for fullscreen comment videos',
+    sheetSwipeHint: '← Swipe left on the bar (not the list) → fullscreen hottest replies; left screen edge → culture grid',
     sheetOpenFeedBar: 'Open fullscreen comment videos',
     gifLabel: 'Describe a GIF or a short clip (English works best)',
     gifPlaceholder: 'e.g. A cute strawberry sitting on a basketball, cartoon style, bright colors',
@@ -1324,9 +1371,12 @@ const STRINGS = {
     previewCaptionPh: 'Add a caption (optional)',
     previewCancel: 'Cancel',
     previewPostVideo: 'Post video comment',
-    cvSwipeHint: '← Swipe right for comments',
-    cvSwipeHintLeft: 'Swipe left · cultural lanes →',
-    cvSwipeHintCulture: '← Swipe right · back to thread videos',
+    cvSwipeHint: '← Drag right on the right-edge strip → comments',
+    cvSwipeHintLeft: 'Drag left on the left edge → culture grid',
+    cvSwipeHintCulture: '← Drag right on the right edge → hottest replies',
+    cvTabPopularVideos: 'Hottest replies',
+    badgeLinePopular: 'Most popular · video reply',
+    badgeLineReplyToPopular: 'Reply to hottest clip',
     cvCultureBtn: 'Culture',
     cvCultureBtnTitle: 'Open cultural lanes as a grid (demo)',
     culturePanelTitle: 'Voices near you',
@@ -1393,7 +1443,7 @@ const STRINGS = {
     hintBackFyp: '← 推荐',
     secBack: '‹ 推荐',
     secTitleRelated: '相关',
-    sheetSwipeHint: '在下方横条上向左滑（不要在评论列表上滑）进入全屏评论视频',
+    sheetSwipeHint: '在下方横条向左滑（勿在列表上）→ 全屏最热回复；屏幕左缘再左滑 → 文化网格',
     sheetOpenFeedBar: '打开全屏评论视频',
     gifLabel: '描述想要的 GIF 或短视频（英文提示词通常效果更好）',
     gifPlaceholder: '例如：一颗草莓坐在篮球上，卡通风格，色彩明亮',
@@ -1405,9 +1455,12 @@ const STRINGS = {
     previewCaptionPh: '添加说明（可选）',
     previewCancel: '取消',
     previewPostVideo: '发布视频评论',
-    cvSwipeHint: '← 右滑返回评论',
-    cvSwipeHintLeft: '左滑 · 文化分区 →',
-    cvSwipeHintCulture: '← 右滑 · 回到本串评论视频',
+    cvSwipeHint: '← 在右侧窄条上向右拖 → 回评论',
+    cvSwipeHintLeft: '在左缘向左拖 → 文化网格',
+    cvSwipeHintCulture: '← 在右缘向右拖 → 最热回复视频',
+    cvTabPopularVideos: '最热回复',
+    badgeLinePopular: '最热 · 视频回复',
+    badgeLineReplyToPopular: '回复最热片段',
     cvCultureBtn: '文化',
     cvCultureBtnTitle: '以网格打开文化分区（演示）',
     culturePanelTitle: '附近的声音',
@@ -1603,7 +1656,6 @@ let sheetTouchX = 0, sheetTouchY = 0, sheetAxis = null, sheetDragging = false;
 const SHEET_SWIPE_THRESHOLD = 48;
 
 /* ─── comment-video layer horizontal swipe (back to comments) ─── */
-let cvTouchX = 0, cvTouchY = 0, cvAxis = null, cvDragging = false;
 
 /* ═══════════════════════════════════════════════════
    BUILD FEEDS
@@ -1865,6 +1917,21 @@ function getCommentMediaForParent(parentId) {
   );
 }
 
+/** Hottest root first, then video/GIF replies to that root, then the rest (scroll-down thread). */
+function orderVideosAroundPopularRoot(mediaList) {
+  const media = mediaList.filter(c =>
+    (c.type === 'video' && c.videoSrc) ||
+    (c.type === 'aiGif' && c.gifSrc)
+  );
+  if (media.length === 0) return mediaList;
+  const popular = media.find(c => c.popularRoot) || media[0];
+  const pid = popular.cvId;
+  const replies = media.filter(c => c.replyToCvId === pid);
+  const used = new Set([pid, ...replies.map(r => r.cvId)]);
+  const rest = media.filter(c => !used.has(c.cvId));
+  return [popular, ...replies, ...rest];
+}
+
 /** Demo “cultural lane” tiles for the grid (not a real recommender). */
 const CULTURE_LANES = [
   { key: 'cn', gradient: 'linear-gradient(148deg,#c62828,#1a0505)', emoji: '🇨🇳', en: 'Greater China', zh: '大中华区' },
@@ -1908,6 +1975,13 @@ function cultureGridIsOpen() {
   return !!(p && p.classList.contains('open'));
 }
 
+function setCvCultureChrome(on) {
+  const layer = document.getElementById('commentVideoFeedLayer');
+  const inline = document.getElementById('commentVideoFeedInline');
+  if (layer) layer.classList.toggle('cv-culture-active', !!on);
+  if (inline) inline.classList.toggle('cv-culture-active', !!on);
+}
+
 function openCultureGrid() {
   const layer = document.getElementById('commentVideoFeedLayer');
   const inline = document.getElementById('commentVideoFeedInline');
@@ -1918,6 +1992,7 @@ function openCultureGrid() {
   if (!p) return;
   p.classList.add('open');
   p.setAttribute('aria-hidden', 'false');
+  setCvCultureChrome(true);
   buildCultureGrid();
 }
 
@@ -1926,6 +2001,7 @@ function closeCultureGrid() {
   if (!p) return;
   p.classList.remove('open');
   p.setAttribute('aria-hidden', 'true');
+  setCvCultureChrome(false);
 }
 
 /** Build fullscreen vertical feed from comment-thread video uploads only */
@@ -1934,7 +2010,7 @@ function buildCommentVideoFeed() {
   if (!feed || !commentVideoParentId) return;
   feed.innerHTML = '';
 
-  const vids = getCommentMediaForParent(commentVideoParentId);
+  const vids = orderVideosAroundPopularRoot(getCommentMediaForParent(commentVideoParentId));
 
   if (vids.length === 0) {
     const empty = document.createElement('div');
@@ -1950,9 +2026,11 @@ function buildCommentVideoFeed() {
     return;
   }
 
+  let hotCvId = null;
   vids.forEach((c, idx) => {
     const cvId = c.cvId || ('cv-' + commentVideoParentId + '-' + idx);
     if (!c.cvId) c.cvId = cvId;
+    if (idx === 0) hotCvId = cvId;
     if (currentLikes[cvId] === undefined) currentLikes[cvId] = false;
 
     const isAiGif = c.type === 'aiGif';
@@ -1961,7 +2039,17 @@ function buildCommentVideoFeed() {
       ? `<img class="video-fill" src="${c.gifSrc}" alt="" />`
       : `<video class="video-fill" src="${c.videoSrc}" playsinline loop controls preload="metadata"></video>`;
     const avatarIcon = isAiGif ? '✨' : (isAiClip ? '🎬' : '📹');
-    const badgeLine = isAiGif ? t('badgeLineAiGif') : (isAiClip ? t('badgeLineAiClip') : t('badgeLineVideo'));
+    const isHotRoot = !!c.popularRoot;
+    const isHotReply = !!(hotCvId && c.replyToCvId === hotCvId);
+    const badgeLine = isAiGif
+      ? t('badgeLineAiGif')
+      : isAiClip
+        ? t('badgeLineAiClip')
+        : isHotRoot
+          ? t('badgeLinePopular')
+          : isHotReply
+            ? t('badgeLineReplyToPopular')
+            : t('badgeLineVideo');
     const musicLine = isAiGif ? t('musicAiGif') : (isAiClip ? t('musicAiClip') : t('musicUpload'));
 
     const card = document.createElement('div');
@@ -2927,14 +3015,18 @@ function commentSheetSwipeGestureBlocked(target) {
 })();
 
 /* ═══════════════════════════════════════════════════
-   COMMENT-VIDEO LAYER: swipe RIGHT → comments · swipe LEFT → culture grid
-   Culture grid: swipe RIGHT → back to vertical thread videos
+   COMMENT-VIDEO LAYER: edge pads (video steals full-surface touches)
+   Left edge → culture grid · right mid-strip → comments · culture right edge → back
 ═══════════════════════════════════════════════════ */
-(function setupCommentVideoLayerSwipe() {
+(function initCommentVideoHorizontalNav() {
   const layer = document.getElementById('commentVideoFeedLayer');
+  const padL = document.getElementById('cvSwipePadThreadLeft');
+  const padR = document.getElementById('cvSwipePadThreadRight');
+  const cultEdge = document.getElementById('cvCultureSwipeEdge');
   const hint = document.getElementById('cvSwipeHint');
   const hintLeft = document.getElementById('cvSwipeHintLeft');
   const hintCulture = document.getElementById('cvSwipeHintCulture');
+  const TH = SHEET_SWIPE_THRESHOLD;
 
   function clearCvHints() {
     if (hint) hint.classList.remove('visible');
@@ -2942,76 +3034,73 @@ function commentSheetSwipeGestureBlocked(target) {
     if (hintCulture) hintCulture.classList.remove('visible');
   }
 
-  layer.addEventListener('touchstart', e => {
-    if (!layer.classList.contains('open')) return;
-    cvTouchX = e.touches[0].clientX;
-    cvTouchY = e.touches[0].clientY;
-    cvAxis = null;
-    cvDragging = false;
-  }, { passive: true });
+  function bindTouchPad(el, opts) {
+    if (!el) return;
+    let sx = 0, sy = 0, axis = null;
+    el.addEventListener('touchstart', e => {
+      sx = e.touches[0].clientX;
+      sy = e.touches[0].clientY;
+      axis = null;
+    }, { passive: true });
+    el.addEventListener('touchmove', e => {
+      const dx = e.touches[0].clientX - sx;
+      const dy = e.touches[0].clientY - sy;
+      if (!axis && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        axis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+      }
+      if (axis !== 'h') return;
+      if (opts.peekComments && dx > 14 && hint) hint.classList.add('visible');
+      if (opts.peekCulture && dx < -14 && hintLeft) hintLeft.classList.add('visible');
+      if (opts.peekBackFromCulture && dx > 14 && hintCulture) hintCulture.classList.add('visible');
+      e.preventDefault();
+    }, { passive: false });
+    el.addEventListener('touchend', e => {
+      clearCvHints();
+      const dx = e.changedTouches[0].clientX - sx;
+      if (axis === 'h' && opts.onEnd) opts.onEnd(dx);
+      axis = null;
+    }, { passive: true });
+  }
 
-  layer.addEventListener('touchmove', e => {
-    if (!layer.classList.contains('open')) return;
-    const dx = e.touches[0].clientX - cvTouchX;
-    const dy = e.touches[0].clientY - cvTouchY;
-    if (!cvAxis) {
-      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
-        cvAxis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
-      }
-    }
-    const cg = cultureGridIsOpen();
-    if (cg) {
-      if (cvAxis === 'h' && dx > 25) {
-        e.preventDefault();
-        cvDragging = true;
-        if (hintCulture) hintCulture.classList.add('visible');
-      }
-    } else {
-      if (cvAxis === 'h' && dx > 25) {
-        e.preventDefault();
-        cvDragging = true;
-        if (hint) hint.classList.add('visible');
-      }
-      if (cvAxis === 'h' && dx < -25) {
-        e.preventDefault();
-        cvDragging = true;
-        if (hintLeft) hintLeft.classList.add('visible');
-      }
-    }
-  }, { passive: false });
-
-  layer.addEventListener('touchend', e => {
-    clearCvHints();
-    if (!layer.classList.contains('open')) return;
-    const dx = e.changedTouches[0].clientX - cvTouchX;
-    if (cultureGridIsOpen()) {
-      if (cvAxis === 'h' && dx > SHEET_SWIPE_THRESHOLD) closeCultureGrid();
-    } else {
-      if (cvAxis === 'h' && dx > SHEET_SWIPE_THRESHOLD) closeCommentVideoFeed();
-      if (cvAxis === 'h' && dx < -SHEET_SWIPE_THRESHOLD) openCultureGrid();
-    }
-    cvAxis = null;
-    cvDragging = false;
-  }, { passive: true });
-
-  let cvMouseDown = false, cvMouseStartX = 0;
-  layer.addEventListener('mousedown', e => {
-    if (!layer.classList.contains('open')) return;
-    if (e.target.closest('.top-nav,.bottom-nav,video,.action-btn,.cv-culture-chip,.cv-comments-chip,.cv-home-chip')) return;
-    if (cultureGridIsOpen() && e.target.closest('.cv-culture-header button')) return;
-    cvMouseDown = true;
-    cvMouseStartX = e.clientX;
+  bindTouchPad(padL, {
+    peekCulture: true,
+    onEnd(dx) {
+      if (!layer.classList.contains('open') || cultureGridIsOpen()) return;
+      if (dx < -TH) openCultureGrid();
+    },
   });
+  bindTouchPad(padR, {
+    peekComments: true,
+    onEnd(dx) {
+      if (!layer.classList.contains('open') || cultureGridIsOpen()) return;
+      if (dx > TH) closeCommentVideoFeed();
+    },
+  });
+  bindTouchPad(cultEdge, {
+    peekBackFromCulture: true,
+    onEnd(dx) {
+      if (!cultureGridIsOpen()) return;
+      if (dx > TH) closeCultureGrid();
+    },
+  });
+
+  let cvPadMouse = null;
+  function onPadMouseDown(e) {
+    cvPadMouse = { x: e.clientX, id: e.currentTarget.id };
+  }
+  [padL, padR, cultEdge].forEach(el => { if (el) el.addEventListener('mousedown', onPadMouseDown); });
   window.addEventListener('mouseup', e => {
-    if (!cvMouseDown) return;
-    cvMouseDown = false;
-    if (!layer.classList.contains('open')) return;
-    const dx = e.clientX - cvMouseStartX;
-    if (cultureGridIsOpen()) {
-      if (dx > SHEET_SWIPE_THRESHOLD) closeCultureGrid();
-    } else {
-      if (dx > SHEET_SWIPE_THRESHOLD) closeCommentVideoFeed();
-      if (dx < -SHEET_SWIPE_THRESHOLD) openCultureGrid();
+    if (!cvPadMouse) return;
+    const dx = e.clientX - cvPadMouse.x;
+    const id = cvPadMouse.id;
+    cvPadMouse = null;
+    if (Math.abs(dx) < TH) return;
+    if (id === 'cvSwipePadThreadLeft' && layer.classList.contains('open') && !cultureGridIsOpen() && dx < -TH) {
+      openCultureGrid();
+    } else if (id === 'cvSwipePadThreadRight' && layer.classList.contains('open') && !cultureGridIsOpen() && dx > TH) {
+      closeCommentVideoFeed();
+    } else if (id === 'cvCultureSwipeEdge' && cultureGridIsOpen() && dx > TH) {
+      closeCultureGrid();
     }
   });
 })();

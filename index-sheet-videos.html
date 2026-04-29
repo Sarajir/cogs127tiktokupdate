@@ -429,6 +429,44 @@
     .cv-inline-feed .vinyl { width: 38px; height: 38px; font-size: 18px; }
     .cv-inline-feed .cv-empty-placeholder { min-height: 220px; height: 100%; }
 
+    .comment-video-feed-inline .cv-inline-feed.feed {
+      touch-action: pan-y;
+    }
+    .comment-video-feed-inline .cv-swipe-pad-thread {
+      position: absolute;
+      z-index: 30;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .comment-video-feed-inline.cv-culture-active .cv-swipe-pad-thread {
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .comment-video-feed-inline .cv-swipe-pad-thread-left {
+      left: 0;
+      top: 44px;
+      bottom: 4px;
+      width: 34px;
+    }
+    .comment-video-feed-inline .cv-swipe-pad-thread-right {
+      right: 0;
+      top: 30%;
+      height: 34%;
+      width: 32px;
+    }
+    .comment-video-feed-inline .cv-culture-swipe-edge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 40px;
+      z-index: 6;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
     .comment-video-feed-inline .cv-swipe-hint {
       position: absolute;
       top: 50%;
@@ -989,12 +1027,13 @@
         <div class="cv-swipe-hint cv-swipe-hint-edge-left" id="cvSwipeHintCulture" data-i18n="cvSwipeHintCulture">Swipe right → thread videos</div>
         <div class="cv-inline-toolbar">
           <button type="button" class="cv-inline-back" onclick="closeCommentVideoFeed()" data-i18n="cvToComments" data-i18n-title="cvToCommentsTitle" title="">Comments</button>
-          <span class="cv-inline-title" data-i18n="cvInlineTitle">Videos in this thread</span>
+          <span class="cv-inline-title" data-i18n="cvInlinePopularTitle">Hottest replies</span>
           <button type="button" class="cv-culture-chip" onclick="openCultureGrid()" data-i18n="cvCultureBtn" data-i18n-title="cvCultureBtnTitle">Culture</button>
           <button type="button" class="cv-inline-home" onclick="exitCommentVideoFeedToHome()" data-i18n="cvHome" data-i18n-title="cvHomeTitle" title="Home">Home</button>
         </div>
         <div class="feed cv-inline-feed" id="commentVideoFeed"></div>
         <div id="cvCulturePanel" class="cv-culture-panel" aria-hidden="true">
+          <div class="cv-culture-swipe-edge" id="cvCultureSwipeEdge" aria-hidden="true"></div>
           <div class="cv-culture-header">
             <button type="button" class="cv-culture-back" onclick="closeCultureGrid()" data-i18n="cultureBack" data-i18n-title="cultureBackTitle">Videos</button>
             <div class="cv-culture-head-text">
@@ -1006,6 +1045,8 @@
             <div class="cv-culture-grid" id="cvCultureGrid"></div>
           </div>
         </div>
+        <div class="cv-swipe-pad-thread cv-swipe-pad-thread-left" id="cvSwipePadThreadLeft" aria-hidden="true"></div>
+        <div class="cv-swipe-pad-thread cv-swipe-pad-thread-right" id="cvSwipePadThreadRight" aria-hidden="true"></div>
       </div>
     </div>
     <div class="sheet-input">
@@ -1157,6 +1198,7 @@ function makeDemoMediaRows(videoId) {
       time: '2h ago',
       timeZh: '2小时前',
       displayUser: '@demo_clips',
+      popularRoot: true,
     },
     {
       type: 'video',
@@ -1167,6 +1209,7 @@ function makeDemoMediaRows(videoId) {
       time: '4h ago',
       timeZh: '4小时前',
       displayUser: '@open_clip',
+      replyToCvId: 'demo-' + vid + '-flower',
     },
     {
       type: 'video',
@@ -1177,6 +1220,7 @@ function makeDemoMediaRows(videoId) {
       time: '5h ago',
       timeZh: '5小时前',
       displayUser: '@upload_bot_a',
+      replyToCvId: 'demo-' + vid + '-flower',
     },
     {
       type: 'video',
@@ -1187,6 +1231,7 @@ function makeDemoMediaRows(videoId) {
       time: '7h ago',
       timeZh: '7小时前',
       displayUser: '@drive_clip',
+      replyToCvId: 'demo-' + vid + '-flower',
     },
     {
       type: 'video',
@@ -1237,12 +1282,12 @@ const STRINGS = {
     hintBackFyp: '← For You',
     secBack: '‹ For You',
     secTitleRelated: 'Related',
-    sheetSwipeHintInline: '← Swipe left on the bar (not the list) — videos slide in inside this sheet',
-    sheetOpenFeedBarInline: 'Open comment videos in this panel',
-    cvSwipeHintInline: 'Swipe right → comments',
+    sheetSwipeHintInline: '← Swipe left on the bar (not the list) → hottest reply videos; then left screen edge → culture grid',
+    sheetOpenFeedBarInline: 'Open hottest-reply videos in this panel',
+    cvSwipeHintInline: 'Drag right on the right-edge strip → comments',
     cvToComments: 'Comments only',
     cvToCommentsTitle: 'Close comment videos only — stay in this thread’s comments',
-    cvInlineTitle: 'Videos in this thread',
+    cvInlinePopularTitle: 'Hottest replies',
     cvHome: 'Home',
     cvHomeTitle: 'Close sheet and go to For You (first column)',
     gifLabel: 'Describe a GIF or a short clip (English works best)',
@@ -1290,8 +1335,10 @@ const STRINGS = {
     alertClipPrompt: 'Please describe the clip you want (same box as GIF).',
     generationFailed: 'Generation failed.',
     clipGenFailed: 'Clip generation failed.',
-    cvSwipeHintLeft: '← Swipe left · cultural lanes',
-    cvSwipeHintCulture: 'Swipe right → thread videos',
+    cvSwipeHintLeft: 'Drag left on the left edge → culture grid',
+    cvSwipeHintCulture: 'Drag right on the right edge → hottest replies',
+    badgeLinePopular: 'Most popular · video reply',
+    badgeLineReplyToPopular: 'Reply to hottest clip',
     cvCultureBtn: 'Culture',
     cvCultureBtnTitle: 'Open cultural lanes as a grid (demo)',
     culturePanelTitle: 'Voices near you',
@@ -1313,12 +1360,12 @@ const STRINGS = {
     hintBackFyp: '← 推荐',
     secBack: '‹ 推荐',
     secTitleRelated: '相关',
-    sheetSwipeHintInline: '在下方横条上向左滑（不要在列表上）— 视频会在面板内滑入',
-    sheetOpenFeedBarInline: '在本面板内打开评论视频',
-    cvSwipeHintInline: '右滑返回评论',
+    sheetSwipeHintInline: '在横条上向左滑（勿在列表上）→ 最热回复视频；再在屏幕左缘向左滑 → 文化网格',
+    sheetOpenFeedBarInline: '在本面板打开最热回复视频',
+    cvSwipeHintInline: '在右侧窄条向右拖 → 回评论',
     cvToComments: '仅回评论',
     cvToCommentsTitle: '只关闭评论视频条，留在本帖评论里',
-    cvInlineTitle: '本串内的视频',
+    cvInlinePopularTitle: '最热回复',
     cvHome: '首页',
     cvHomeTitle: '关闭面板并回到推荐首页（第一列）',
     gifLabel: '描述想要的 GIF 或短视频（英文提示词通常效果更好）',
@@ -1366,8 +1413,10 @@ const STRINGS = {
     alertClipPrompt: '请先描述想要的短片（与 GIF 同一输入框）。',
     generationFailed: '生成失败。',
     clipGenFailed: '短片生成失败。',
-    cvSwipeHintLeft: '左滑 · 文化分区',
-    cvSwipeHintCulture: '右滑 → 本串视频',
+    cvSwipeHintLeft: '在左缘向左拖 → 文化网格',
+    cvSwipeHintCulture: '在右缘向右拖 → 最热回复',
+    badgeLinePopular: '最热 · 视频回复',
+    badgeLineReplyToPopular: '回复最热片段',
     cvCultureBtn: '文化',
     cvCultureBtnTitle: '以网格打开文化分区（演示）',
     culturePanelTitle: '附近的声音',
@@ -1507,9 +1556,6 @@ let commentVideoParentId = null;
 /* ─── sheet horizontal swipe (comments → full comment-video feed) ─── */
 let sheetTouchX = 0, sheetTouchY = 0, sheetAxis = null, sheetDragging = false;
 const SHEET_SWIPE_THRESHOLD = 48;
-
-/* ─── comment-video layer horizontal swipe (back to comments) ─── */
-let cvTouchX = 0, cvTouchY = 0, cvAxis = null, cvDragging = false;
 
 /* ═══════════════════════════════════════════════════
    BUILD FEEDS
@@ -1729,6 +1775,7 @@ function openComments(videoId, count, e) {
   e.stopPropagation();
   const cvInline = document.getElementById('commentVideoFeedInline');
   if (cvInline.classList.contains('open')) {
+    closeCultureGrid();
     cvInline.classList.remove('open');
     cvInline.setAttribute('aria-hidden', 'true');
     pauseAllCommentFeedVideos();
@@ -1767,6 +1814,20 @@ function getCommentMediaForParent(parentId) {
     (c.type === 'video' && c.videoSrc) ||
     (c.type === 'aiGif' && c.gifSrc)
   );
+}
+
+function orderVideosAroundPopularRoot(mediaList) {
+  const media = mediaList.filter(c =>
+    (c.type === 'video' && c.videoSrc) ||
+    (c.type === 'aiGif' && c.gifSrc)
+  );
+  if (media.length === 0) return mediaList;
+  const popular = media.find(c => c.popularRoot) || media[0];
+  const pid = popular.cvId;
+  const replies = media.filter(c => c.replyToCvId === pid);
+  const used = new Set([pid, ...replies.map(r => r.cvId)]);
+  const rest = media.filter(c => !used.has(c.cvId));
+  return [popular, ...replies, ...rest];
 }
 
 const CULTURE_LANES = [
@@ -1811,6 +1872,13 @@ function cultureGridIsOpen() {
   return !!(p && p.classList.contains('open'));
 }
 
+function setCvCultureChrome(on) {
+  const layer = document.getElementById('commentVideoFeedLayer');
+  const inline = document.getElementById('commentVideoFeedInline');
+  if (layer) layer.classList.toggle('cv-culture-active', !!on);
+  if (inline) inline.classList.toggle('cv-culture-active', !!on);
+}
+
 function openCultureGrid() {
   const layer = document.getElementById('commentVideoFeedLayer');
   const inline = document.getElementById('commentVideoFeedInline');
@@ -1821,6 +1889,7 @@ function openCultureGrid() {
   if (!p) return;
   p.classList.add('open');
   p.setAttribute('aria-hidden', 'false');
+  setCvCultureChrome(true);
   buildCultureGrid();
 }
 
@@ -1829,6 +1898,7 @@ function closeCultureGrid() {
   if (!p) return;
   p.classList.remove('open');
   p.setAttribute('aria-hidden', 'true');
+  setCvCultureChrome(false);
 }
 
 /** Build fullscreen vertical feed from comment-thread video uploads only */
@@ -1837,7 +1907,7 @@ function buildCommentVideoFeed() {
   if (!feed || !commentVideoParentId) return;
   feed.innerHTML = '';
 
-  const vids = getCommentMediaForParent(commentVideoParentId);
+  const vids = orderVideosAroundPopularRoot(getCommentMediaForParent(commentVideoParentId));
 
   if (vids.length === 0) {
     const empty = document.createElement('div');
@@ -1853,9 +1923,11 @@ function buildCommentVideoFeed() {
     return;
   }
 
+  let hotCvId = null;
   vids.forEach((c, idx) => {
     const cvId = c.cvId || ('cv-' + commentVideoParentId + '-' + idx);
     if (!c.cvId) c.cvId = cvId;
+    if (idx === 0) hotCvId = cvId;
     if (currentLikes[cvId] === undefined) currentLikes[cvId] = false;
 
     const isAiGif = c.type === 'aiGif';
@@ -1864,7 +1936,17 @@ function buildCommentVideoFeed() {
       ? `<img class="video-fill" src="${c.gifSrc}" alt="" />`
       : `<video class="video-fill" src="${c.videoSrc}" playsinline loop controls preload="metadata"></video>`;
     const avatarIcon = isAiGif ? '✨' : (isAiClip ? '🎬' : '📹');
-    const badgeLine = isAiGif ? t('badgeLineAiGif') : (isAiClip ? t('badgeLineAiClip') : t('badgeLineVideo'));
+    const isHotRoot = !!c.popularRoot;
+    const isHotReply = !!(hotCvId && c.replyToCvId === hotCvId);
+    const badgeLine = isAiGif
+      ? t('badgeLineAiGif')
+      : isAiClip
+        ? t('badgeLineAiClip')
+        : isHotRoot
+          ? t('badgeLinePopular')
+          : isHotReply
+            ? t('badgeLineReplyToPopular')
+            : t('badgeLineVideo');
     const musicLine = isAiGif ? t('musicAiGif') : (isAiClip ? t('musicAiClip') : t('musicUpload'));
 
     const card = document.createElement('div');
@@ -2830,13 +2912,17 @@ function commentSheetSwipeGestureBlocked(target) {
 })();
 
 /* ═══════════════════════════════════════════════════
-   INLINE COMMENT-VIDEO: swipe RIGHT → comments · swipe LEFT → culture grid
+   INLINE COMMENT-VIDEO: edge pads (video steals touches)
 ═══════════════════════════════════════════════════ */
-(function setupCommentVideoLayerSwipe() {
-  const layer = document.getElementById('commentVideoFeedInline');
+(function initCommentVideoHorizontalNav() {
+  const root = document.getElementById('commentVideoFeedInline');
+  const padL = document.getElementById('cvSwipePadThreadLeft');
+  const padR = document.getElementById('cvSwipePadThreadRight');
+  const cultEdge = document.getElementById('cvCultureSwipeEdge');
   const hint = document.getElementById('cvSwipeHint');
   const hintLeft = document.getElementById('cvSwipeHintLeft');
   const hintCulture = document.getElementById('cvSwipeHintCulture');
+  const TH = SHEET_SWIPE_THRESHOLD;
 
   function clearCvHints() {
     if (hint) hint.classList.remove('visible');
@@ -2844,76 +2930,73 @@ function commentSheetSwipeGestureBlocked(target) {
     if (hintCulture) hintCulture.classList.remove('visible');
   }
 
-  layer.addEventListener('touchstart', e => {
-    if (!layer.classList.contains('open')) return;
-    cvTouchX = e.touches[0].clientX;
-    cvTouchY = e.touches[0].clientY;
-    cvAxis = null;
-    cvDragging = false;
-  }, { passive: true });
+  function bindTouchPad(el, opts) {
+    if (!el) return;
+    let sx = 0, sy = 0, axis = null;
+    el.addEventListener('touchstart', e => {
+      sx = e.touches[0].clientX;
+      sy = e.touches[0].clientY;
+      axis = null;
+    }, { passive: true });
+    el.addEventListener('touchmove', e => {
+      const dx = e.touches[0].clientX - sx;
+      const dy = e.touches[0].clientY - sy;
+      if (!axis && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        axis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+      }
+      if (axis !== 'h') return;
+      if (opts.peekComments && dx > 14 && hint) hint.classList.add('visible');
+      if (opts.peekCulture && dx < -14 && hintLeft) hintLeft.classList.add('visible');
+      if (opts.peekBackFromCulture && dx > 14 && hintCulture) hintCulture.classList.add('visible');
+      e.preventDefault();
+    }, { passive: false });
+    el.addEventListener('touchend', e => {
+      clearCvHints();
+      const dx = e.changedTouches[0].clientX - sx;
+      if (axis === 'h' && opts.onEnd) opts.onEnd(dx);
+      axis = null;
+    }, { passive: true });
+  }
 
-  layer.addEventListener('touchmove', e => {
-    if (!layer.classList.contains('open')) return;
-    const dx = e.touches[0].clientX - cvTouchX;
-    const dy = e.touches[0].clientY - cvTouchY;
-    if (!cvAxis) {
-      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
-        cvAxis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
-      }
-    }
-    const cg = cultureGridIsOpen();
-    if (cg) {
-      if (cvAxis === 'h' && dx > 25) {
-        e.preventDefault();
-        cvDragging = true;
-        if (hintCulture) hintCulture.classList.add('visible');
-      }
-    } else {
-      if (cvAxis === 'h' && dx > 25) {
-        e.preventDefault();
-        cvDragging = true;
-        if (hint) hint.classList.add('visible');
-      }
-      if (cvAxis === 'h' && dx < -25) {
-        e.preventDefault();
-        cvDragging = true;
-        if (hintLeft) hintLeft.classList.add('visible');
-      }
-    }
-  }, { passive: false });
-
-  layer.addEventListener('touchend', e => {
-    clearCvHints();
-    if (!layer.classList.contains('open')) return;
-    const dx = e.changedTouches[0].clientX - cvTouchX;
-    if (cultureGridIsOpen()) {
-      if (cvAxis === 'h' && dx > SHEET_SWIPE_THRESHOLD) closeCultureGrid();
-    } else {
-      if (cvAxis === 'h' && dx > SHEET_SWIPE_THRESHOLD) closeCommentVideoFeed();
-      if (cvAxis === 'h' && dx < -SHEET_SWIPE_THRESHOLD) openCultureGrid();
-    }
-    cvAxis = null;
-    cvDragging = false;
-  }, { passive: true });
-
-  let cvMouseDown = false, cvMouseStartX = 0;
-  layer.addEventListener('mousedown', e => {
-    if (!layer.classList.contains('open')) return;
-    if (e.target.closest('.cv-inline-toolbar,.cv-inline-back,.cv-inline-home,.cv-culture-chip,video,.action-btn')) return;
-    if (cultureGridIsOpen() && e.target.closest('.cv-culture-header button')) return;
-    cvMouseDown = true;
-    cvMouseStartX = e.clientX;
+  bindTouchPad(padL, {
+    peekCulture: true,
+    onEnd(dx) {
+      if (!root.classList.contains('open') || cultureGridIsOpen()) return;
+      if (dx < -TH) openCultureGrid();
+    },
   });
+  bindTouchPad(padR, {
+    peekComments: true,
+    onEnd(dx) {
+      if (!root.classList.contains('open') || cultureGridIsOpen()) return;
+      if (dx > TH) closeCommentVideoFeed();
+    },
+  });
+  bindTouchPad(cultEdge, {
+    peekBackFromCulture: true,
+    onEnd(dx) {
+      if (!cultureGridIsOpen()) return;
+      if (dx > TH) closeCultureGrid();
+    },
+  });
+
+  let cvPadMouse = null;
+  function onPadMouseDown(e) {
+    cvPadMouse = { x: e.clientX, id: e.currentTarget.id };
+  }
+  [padL, padR, cultEdge].forEach(el => { if (el) el.addEventListener('mousedown', onPadMouseDown); });
   window.addEventListener('mouseup', e => {
-    if (!cvMouseDown) return;
-    cvMouseDown = false;
-    if (!layer.classList.contains('open')) return;
-    const dx = e.clientX - cvMouseStartX;
-    if (cultureGridIsOpen()) {
-      if (dx > SHEET_SWIPE_THRESHOLD) closeCultureGrid();
-    } else {
-      if (dx > SHEET_SWIPE_THRESHOLD) closeCommentVideoFeed();
-      if (dx < -SHEET_SWIPE_THRESHOLD) openCultureGrid();
+    if (!cvPadMouse) return;
+    const dx = e.clientX - cvPadMouse.x;
+    const id = cvPadMouse.id;
+    cvPadMouse = null;
+    if (Math.abs(dx) < TH) return;
+    if (id === 'cvSwipePadThreadLeft' && root.classList.contains('open') && !cultureGridIsOpen() && dx < -TH) {
+      openCultureGrid();
+    } else if (id === 'cvSwipePadThreadRight' && root.classList.contains('open') && !cultureGridIsOpen() && dx > TH) {
+      closeCommentVideoFeed();
+    } else if (id === 'cvCultureSwipeEdge' && cultureGridIsOpen() && dx > TH) {
+      closeCultureGrid();
     }
   });
 })();
