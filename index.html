@@ -640,6 +640,136 @@
     }
     #commentVideoFeedLayer .cv-home-chip:active { filter: brightness(1.12); transform: scale(.97); }
 
+    #commentVideoFeedLayer .cv-culture-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(120, 220, 200, .55);
+      background: rgba(24, 72, 68, .5);
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #commentVideoFeedLayer .cv-culture-chip:active { filter: brightness(1.12); transform: scale(.97); }
+
+    #commentVideoFeedLayer .cv-swipe-hint-edge-right {
+      left: auto;
+      right: 8px;
+      transform: translateY(-50%);
+      text-align: right;
+    }
+
+    #commentVideoFeedLayer .cv-culture-panel {
+      position: absolute;
+      inset: 0;
+      z-index: 88;
+      display: flex;
+      flex-direction: column;
+      background: #08080a;
+      transform: translateX(100%);
+      transition: transform .36s cubic-bezier(.4, 0, .2, 1);
+      pointer-events: none;
+    }
+    #commentVideoFeedLayer .cv-culture-panel.open {
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    #commentVideoFeedLayer .cv-culture-header {
+      flex-shrink: 0;
+      padding: 12px 14px 10px;
+      padding-top: max(48px, env(safe-area-inset-top, 0px) + 32px);
+      border-bottom: 1px solid #222;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    #commentVideoFeedLayer .cv-culture-back {
+      flex-shrink: 0;
+      border: none;
+      background: rgba(255, 255, 255, .12);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #commentVideoFeedLayer .cv-culture-back:active { filter: brightness(1.15); }
+    #commentVideoFeedLayer .cv-culture-head-text {
+      flex: 1;
+      min-width: 0;
+    }
+    #commentVideoFeedLayer .cv-culture-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    #commentVideoFeedLayer .cv-culture-sub {
+      margin-top: 4px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .48);
+      line-height: 1.35;
+    }
+    #commentVideoFeedLayer .cv-culture-grid-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 12px 12px 20px;
+    }
+    #commentVideoFeedLayer .cv-culture-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    @media (min-width: 380px) {
+      #commentVideoFeedLayer .cv-culture-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    #commentVideoFeedLayer .cv-culture-cell {
+      position: relative;
+      aspect-ratio: 3 / 4;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .1);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+    }
+    #commentVideoFeedLayer .cv-culture-cell:active { transform: scale(.98); }
+    #commentVideoFeedLayer .cv-culture-cell-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+    #commentVideoFeedLayer .cv-culture-cell-emoji {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 28px;
+      line-height: 1;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .5));
+    }
+    #commentVideoFeedLayer .cv-culture-cell-label {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 10px 11px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.25;
+      background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .88));
+    }
+
     .cv-feed-badge {
       font-size: 11px; color: rgba(255,255,255,.55);
       background: rgba(254,44,85,.25); padding: 3px 8px; border-radius: 4px;
@@ -919,9 +1049,12 @@
   <!-- Fullscreen feed: ONLY video comments from current thread (no algorithm) -->
   <div id="commentVideoFeedLayer">
     <div class="cv-swipe-hint" id="cvSwipeHint" data-i18n="cvSwipeHint">← Swipe right for comments</div>
+    <div class="cv-swipe-hint cv-swipe-hint-edge-right" id="cvSwipeHintLeft" data-i18n="cvSwipeHintLeft">Swipe left · cultural lanes →</div>
+    <div class="cv-swipe-hint" id="cvSwipeHintCulture" data-i18n="cvSwipeHintCulture">← Swipe right · back to thread videos</div>
     <div class="top-nav" style="padding-top:44px;">
       <div class="cv-layer-top-cluster">
         <button type="button" class="cv-comments-chip" onclick="closeCommentVideoFeed()" data-i18n="cvToComments" data-i18n-title="cvToCommentsTitle" title="">Comments only</button>
+        <button type="button" class="cv-culture-chip" onclick="openCultureGrid()" data-i18n="cvCultureBtn" data-i18n-title="cvCultureBtnTitle" title="">Culture</button>
         <button type="button" class="cv-home-chip" onclick="exitCommentVideoFeedToHome()" data-i18n="cvHome" data-i18n-title="cvHomeTitle" title="">Home</button>
       </div>
       <div class="tab" onclick="void(0)" data-i18n="tabFollowing">Following</div>
@@ -930,6 +1063,18 @@
       <div class="search-icon" id="cvSearchInfo" onclick="alertCommentInfo()">ℹ️</div>
     </div>
     <div class="feed" id="commentVideoFeed"></div>
+    <div id="cvCulturePanel" class="cv-culture-panel" aria-hidden="true">
+      <div class="cv-culture-header">
+        <button type="button" class="cv-culture-back" onclick="closeCultureGrid()" data-i18n="cultureBack" data-i18n-title="cultureBackTitle">Videos</button>
+        <div class="cv-culture-head-text">
+          <div class="cv-culture-title" data-i18n="culturePanelTitle">Voices near you</div>
+          <div class="cv-culture-sub" data-i18n="culturePanelSub">Curated by language and region — demo grid only.</div>
+        </div>
+      </div>
+      <div class="cv-culture-grid-scroll">
+        <div class="cv-culture-grid" id="cvCultureGrid"></div>
+      </div>
+    </div>
     <div class="bottom-nav">
       <div class="nav-item active" onclick="switchNav(this)">
         <div class="nav-icon">💬</div><div class="nav-label" data-i18n="cvNavCommentVideos">Comment videos</div>
@@ -1180,6 +1325,15 @@ const STRINGS = {
     previewCancel: 'Cancel',
     previewPostVideo: 'Post video comment',
     cvSwipeHint: '← Swipe right for comments',
+    cvSwipeHintLeft: 'Swipe left · cultural lanes →',
+    cvSwipeHintCulture: '← Swipe right · back to thread videos',
+    cvCultureBtn: 'Culture',
+    cvCultureBtnTitle: 'Open cultural lanes as a grid (demo)',
+    culturePanelTitle: 'Voices near you',
+    culturePanelSub: 'Curated by language & region — demo grid only.',
+    cultureBack: 'Videos',
+    cultureBackTitle: 'Back to vertical comment videos in this thread',
+    cultureDemoAlert: 'Demo curated lane: {name} (not a real feed).',
     cvToComments: 'Comments only',
     cvToCommentsTitle: 'Close comment videos only — stay in this thread’s comments',
     cvHome: 'Home',
@@ -1252,6 +1406,15 @@ const STRINGS = {
     previewCancel: '取消',
     previewPostVideo: '发布视频评论',
     cvSwipeHint: '← 右滑返回评论',
+    cvSwipeHintLeft: '左滑 · 文化分区 →',
+    cvSwipeHintCulture: '← 右滑 · 回到本串评论视频',
+    cvCultureBtn: '文化',
+    cvCultureBtnTitle: '以网格打开文化分区（演示）',
+    culturePanelTitle: '附近的声音',
+    culturePanelSub: '按语言与地区策展 — 仅为演示网格。',
+    cultureBack: '视频',
+    cultureBackTitle: '返回本串竖滑评论视频',
+    cultureDemoAlert: '演示策展分区：{name}（非真实推荐流）。',
     cvToComments: '回评论',
     cvToCommentsTitle: '只关闭评论视频，留在本帖评论区',
     cvHome: '首页',
@@ -1404,6 +1567,10 @@ function refreshAllCopy() {
   }
   if (cvLayer && cvLayer.classList.contains('open') && commentVideoParentId) {
     buildCommentVideoFeed();
+  }
+  const cvCulture = document.getElementById('cvCulturePanel');
+  if (cvCulture && cvCulture.classList.contains('open')) {
+    buildCultureGrid();
   }
 }
 
@@ -1698,6 +1865,69 @@ function getCommentMediaForParent(parentId) {
   );
 }
 
+/** Demo “cultural lane” tiles for the grid (not a real recommender). */
+const CULTURE_LANES = [
+  { key: 'cn', gradient: 'linear-gradient(148deg,#c62828,#1a0505)', emoji: '🇨🇳', en: 'Greater China', zh: '大中华区' },
+  { key: 'za', gradient: 'linear-gradient(148deg,#007a4d,#003d26)', emoji: '🇿🇦', en: 'South Africa', zh: '南非' },
+  { key: 'jp', gradient: 'linear-gradient(148deg,#fbc2eb,#a18cd1)', emoji: '🇯🇵', en: 'Japan', zh: '日本' },
+  { key: 'br', gradient: 'linear-gradient(148deg,#f7971e,#22c55e)', emoji: '🇧🇷', en: 'Brazil', zh: '巴西' },
+  { key: 'us', gradient: 'linear-gradient(148deg,#1e3a8a,#dc2626)', emoji: '🇺🇸', en: 'United States', zh: '美国' },
+  { key: 'ng', gradient: 'linear-gradient(148deg,#14532d,#eab308)', emoji: '🇳🇬', en: 'Nigeria', zh: '尼日利亚' },
+  { key: 'in', gradient: 'linear-gradient(148deg,#f97316,#1d4ed8)', emoji: '🇮🇳', en: 'India', zh: '印度' },
+  { key: 'kr', gradient: 'linear-gradient(148deg,#93c5fd,#1e1b4b)', emoji: '🇰🇷', en: 'Korea', zh: '韩国' },
+];
+
+function cultureLaneLabel(lane) {
+  if (!lane) return '';
+  return appLocale === 'zh' ? lane.zh : lane.en;
+}
+
+function buildCultureGrid() {
+  const grid = document.getElementById('cvCultureGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  CULTURE_LANES.forEach(lane => {
+    const label = escapeHtml(cultureLaneLabel(lane));
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'cv-culture-cell';
+    cell.setAttribute('aria-label', cultureLaneLabel(lane));
+    cell.innerHTML = `
+      <span class="cv-culture-cell-bg" style="background:${lane.gradient}"></span>
+      <span class="cv-culture-cell-emoji">${lane.emoji}</span>
+      <span class="cv-culture-cell-label">${label}</span>`;
+    cell.addEventListener('click', () => {
+      alert(tReplace('cultureDemoAlert', { name: cultureLaneLabel(lane) }));
+    });
+    grid.appendChild(cell);
+  });
+}
+
+function cultureGridIsOpen() {
+  const p = document.getElementById('cvCulturePanel');
+  return !!(p && p.classList.contains('open'));
+}
+
+function openCultureGrid() {
+  const layer = document.getElementById('commentVideoFeedLayer');
+  const inline = document.getElementById('commentVideoFeedInline');
+  const active = (layer && layer.classList.contains('open')) || (inline && inline.classList.contains('open'));
+  if (!active) return;
+  pauseAllCommentFeedVideos();
+  const p = document.getElementById('cvCulturePanel');
+  if (!p) return;
+  p.classList.add('open');
+  p.setAttribute('aria-hidden', 'false');
+  buildCultureGrid();
+}
+
+function closeCultureGrid() {
+  const p = document.getElementById('cvCulturePanel');
+  if (!p) return;
+  p.classList.remove('open');
+  p.setAttribute('aria-hidden', 'true');
+}
+
 /** Build fullscreen vertical feed from comment-thread video uploads only */
 function buildCommentVideoFeed() {
   const feed = document.getElementById('commentVideoFeed');
@@ -1787,6 +2017,7 @@ function openCommentVideoFeed() {
     alert(t('alertCvNested'));
     return;
   }
+  closeCultureGrid();
   commentVideoParentId = currentCardId;
   document.getElementById('commentsSheet').classList.remove('open');
   document.getElementById('overlayBg').classList.remove('show');
@@ -1801,6 +2032,7 @@ function pauseAllCommentFeedVideos() {
 
 function closeCommentVideoFeed() {
   pauseAllCommentFeedVideos();
+  closeCultureGrid();
   document.getElementById('commentVideoFeedLayer').classList.remove('open');
   document.querySelector('.app').classList.remove('hide-section-pill');
   if (commentVideoParentId) {
@@ -1817,6 +2049,7 @@ function closeCommentVideoFeed() {
 /** One tap: leave comment-video fullscreen, close comments, go to For You (column 0) and scroll home feed to top. */
 function exitCommentVideoFeedToHome() {
   pauseAllCommentFeedVideos();
+  closeCultureGrid();
   const layer = document.getElementById('commentVideoFeedLayer');
   const inline = document.getElementById('commentVideoFeedInline');
   if (layer && layer.classList.contains('open')) {
@@ -2694,11 +2927,20 @@ function commentSheetSwipeGestureBlocked(target) {
 })();
 
 /* ═══════════════════════════════════════════════════
-   COMMENT-VIDEO LAYER: swipe RIGHT → back to comments sheet
+   COMMENT-VIDEO LAYER: swipe RIGHT → comments · swipe LEFT → culture grid
+   Culture grid: swipe RIGHT → back to vertical thread videos
 ═══════════════════════════════════════════════════ */
 (function setupCommentVideoLayerSwipe() {
   const layer = document.getElementById('commentVideoFeedLayer');
   const hint = document.getElementById('cvSwipeHint');
+  const hintLeft = document.getElementById('cvSwipeHintLeft');
+  const hintCulture = document.getElementById('cvSwipeHintCulture');
+
+  function clearCvHints() {
+    if (hint) hint.classList.remove('visible');
+    if (hintLeft) hintLeft.classList.remove('visible');
+    if (hintCulture) hintCulture.classList.remove('visible');
+  }
 
   layer.addEventListener('touchstart', e => {
     if (!layer.classList.contains('open')) return;
@@ -2717,19 +2959,36 @@ function commentSheetSwipeGestureBlocked(target) {
         cvAxis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
       }
     }
-    if (cvAxis === 'h' && dx > 25) {
-      e.preventDefault();
-      cvDragging = true;
-      hint.classList.add('visible');
+    const cg = cultureGridIsOpen();
+    if (cg) {
+      if (cvAxis === 'h' && dx > 25) {
+        e.preventDefault();
+        cvDragging = true;
+        if (hintCulture) hintCulture.classList.add('visible');
+      }
+    } else {
+      if (cvAxis === 'h' && dx > 25) {
+        e.preventDefault();
+        cvDragging = true;
+        if (hint) hint.classList.add('visible');
+      }
+      if (cvAxis === 'h' && dx < -25) {
+        e.preventDefault();
+        cvDragging = true;
+        if (hintLeft) hintLeft.classList.add('visible');
+      }
     }
   }, { passive: false });
 
   layer.addEventListener('touchend', e => {
-    hint.classList.remove('visible');
+    clearCvHints();
     if (!layer.classList.contains('open')) return;
     const dx = e.changedTouches[0].clientX - cvTouchX;
-    if (cvAxis === 'h' && dx > SHEET_SWIPE_THRESHOLD) {
-      closeCommentVideoFeed();
+    if (cultureGridIsOpen()) {
+      if (cvAxis === 'h' && dx > SHEET_SWIPE_THRESHOLD) closeCultureGrid();
+    } else {
+      if (cvAxis === 'h' && dx > SHEET_SWIPE_THRESHOLD) closeCommentVideoFeed();
+      if (cvAxis === 'h' && dx < -SHEET_SWIPE_THRESHOLD) openCultureGrid();
     }
     cvAxis = null;
     cvDragging = false;
@@ -2738,7 +2997,8 @@ function commentSheetSwipeGestureBlocked(target) {
   let cvMouseDown = false, cvMouseStartX = 0;
   layer.addEventListener('mousedown', e => {
     if (!layer.classList.contains('open')) return;
-    if (e.target.closest('.top-nav,.bottom-nav,video,.action-btn')) return;
+    if (e.target.closest('.top-nav,.bottom-nav,video,.action-btn,.cv-culture-chip,.cv-comments-chip,.cv-home-chip')) return;
+    if (cultureGridIsOpen() && e.target.closest('.cv-culture-header button')) return;
     cvMouseDown = true;
     cvMouseStartX = e.clientX;
   });
@@ -2747,7 +3007,12 @@ function commentSheetSwipeGestureBlocked(target) {
     cvMouseDown = false;
     if (!layer.classList.contains('open')) return;
     const dx = e.clientX - cvMouseStartX;
-    if (dx > SHEET_SWIPE_THRESHOLD) closeCommentVideoFeed();
+    if (cultureGridIsOpen()) {
+      if (dx > SHEET_SWIPE_THRESHOLD) closeCultureGrid();
+    } else {
+      if (dx > SHEET_SWIPE_THRESHOLD) closeCommentVideoFeed();
+      if (dx < -SHEET_SWIPE_THRESHOLD) openCultureGrid();
+    }
   });
 })();
 
