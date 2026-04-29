@@ -860,7 +860,7 @@
       <div id="commentVideoFeedInline" class="comment-video-feed-inline" aria-hidden="true">
         <div class="cv-swipe-hint" id="cvSwipeHint" data-i18n="cvSwipeHintInline">Swipe right → comments</div>
         <div class="cv-inline-toolbar">
-          <button type="button" class="cv-inline-back" onclick="closeCommentVideoFeed()" data-i18n="cvInlineBack">← Comments</button>
+          <button type="button" class="cv-inline-back" onclick="closeCommentVideoFeed()" data-i18n="cvToComments" data-i18n-title="cvToCommentsTitle" title="">Comments</button>
           <span class="cv-inline-title" data-i18n="cvInlineTitle">Videos in this thread</span>
           <button type="button" class="cv-inline-home" onclick="exitCommentVideoFeedToHome()" data-i18n="cvHome" data-i18n-title="cvHomeTitle" title="Home">Home</button>
         </div>
@@ -1099,7 +1099,8 @@ const STRINGS = {
     sheetSwipeHintInline: '← Swipe left on the bar (not the list) — videos slide in inside this sheet',
     sheetOpenFeedBarInline: 'Open comment videos in this panel',
     cvSwipeHintInline: 'Swipe right → comments',
-    cvInlineBack: '← Comments',
+    cvToComments: 'Comments only',
+    cvToCommentsTitle: 'Close comment videos only — stay in this thread’s comments',
     cvInlineTitle: 'Videos in this thread',
     cvHome: 'Home',
     cvHomeTitle: 'Close sheet and go to For You (first column)',
@@ -1165,7 +1166,8 @@ const STRINGS = {
     sheetSwipeHintInline: '在下方横条上向左滑（不要在列表上）— 视频会在面板内滑入',
     sheetOpenFeedBarInline: '在本面板内打开评论视频',
     cvSwipeHintInline: '右滑返回评论',
-    cvInlineBack: '← 评论',
+    cvToComments: '仅回评论',
+    cvToCommentsTitle: '只关闭评论视频条，留在本帖评论里',
     cvInlineTitle: '本串内的视频',
     cvHome: '首页',
     cvHomeTitle: '关闭面板并回到推荐首页（第一列）',

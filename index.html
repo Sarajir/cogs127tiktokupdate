@@ -610,6 +610,21 @@
       gap: 6px;
       z-index: 2;
     }
+    #commentVideoFeedLayer .cv-comments-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.55);
+      background: rgba(0,0,0,.4);
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #commentVideoFeedLayer .cv-comments-chip:active { filter: brightness(1.1); transform: scale(.97); }
+
     #commentVideoFeedLayer .cv-home-chip {
       font-size: 11px;
       font-weight: 700;
@@ -906,8 +921,8 @@
     <div class="cv-swipe-hint" id="cvSwipeHint" data-i18n="cvSwipeHint">← Swipe right for comments</div>
     <div class="top-nav" style="padding-top:44px;">
       <div class="cv-layer-top-cluster">
-        <div class="live-btn" onclick="closeCommentVideoFeed()" data-i18n="cvBack">Back</div>
-        <button type="button" class="cv-home-chip" onclick="exitCommentVideoFeedToHome()" data-i18n="cvHome" data-i18n-title="cvHomeTitle" title="Home">Home</button>
+        <button type="button" class="cv-comments-chip" onclick="closeCommentVideoFeed()" data-i18n="cvToComments" data-i18n-title="cvToCommentsTitle" title="">Comments</button>
+        <button type="button" class="cv-home-chip" onclick="exitCommentVideoFeedToHome()" data-i18n="cvHome" data-i18n-title="cvHomeTitle" title="">Home</button>
       </div>
       <div class="tab" onclick="void(0)" data-i18n="tabFollowing">Following</div>
       <div class="tab active" onclick="void(0)" data-i18n="cvTabCommentVideos">Comment videos</div>
@@ -1165,7 +1180,8 @@ const STRINGS = {
     previewCancel: 'Cancel',
     previewPostVideo: 'Post video comment',
     cvSwipeHint: '← Swipe right for comments',
-    cvBack: 'Back',
+    cvToComments: 'Comments only',
+    cvToCommentsTitle: 'Close comment videos only — stay in this thread’s comments',
     cvHome: 'Home',
     cvHomeTitle: 'Leave comments and open the For You feed (first column)',
     cvTabCommentVideos: 'Comment videos',
@@ -1236,7 +1252,8 @@ const STRINGS = {
     previewCancel: '取消',
     previewPostVideo: '发布视频评论',
     cvSwipeHint: '← 右滑返回评论',
-    cvBack: '返回',
+    cvToComments: '回评论',
+    cvToCommentsTitle: '只关闭评论视频，留在本帖评论区',
     cvHome: '首页',
     cvHomeTitle: '关闭评论并回到推荐首页（第一列）',
     cvTabCommentVideos: '评论视频',
