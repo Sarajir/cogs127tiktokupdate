@@ -1018,8 +1018,30 @@
       border-radius: 14px;
       border: 1px solid #252525;
       overflow: hidden;
+      /* ~ half viewport; overview + lists scroll inside .travel-guide-scroll-inner */
+      max-height: 50vh;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .travel-guide-scroll-inner {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+    }
+    .travel-guide-scroll-inner::-webkit-scrollbar {
+      width: 5px;
+    }
+    .travel-guide-scroll-inner::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,.22);
+      border-radius: 4px;
     }
     .travel-guide-head {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1454,6 +1476,7 @@
               <span id="travelVoiceIcon">🔊</span> <span id="travelVoiceLabel" data-i18n="travelListen">Listen</span>
             </button>
           </div>
+          <div class="travel-guide-scroll-inner" id="travelGuideScrollInner">
           <div class="travel-section">
             <h3 data-i18n="travelSecOverview">Quick overview</h3>
             <p id="travelOverviewText" style="margin:0;font-size:14px;line-height:1.5;color:rgba(255,255,255,.88);"></p>
@@ -1469,6 +1492,7 @@
           <div class="travel-section">
             <h3 data-i18n="travelSecAfterArrival">After arrival · on the ground</h3>
             <ul id="travelListAfterArrival"></ul>
+          </div>
           </div>
         </div>
         <div class="travel-feature-wrap">
