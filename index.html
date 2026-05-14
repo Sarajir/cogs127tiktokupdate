@@ -910,6 +910,272 @@
     /* Bookmarked state */
     .action-btn.bookmarked .action-icon { filter: drop-shadow(0 0 6px #ffd43b); }
 
+    /* ═══════════════════════════════
+       TRAVEL SEARCH (Search tab concept)
+    ═══════════════════════════════ */
+    .travel-layer {
+      position: fixed;
+      inset: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 420px;
+      z-index: 750;
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s ease;
+    }
+    .travel-layer.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .travel-header {
+      flex-shrink: 0;
+      padding: 44px 14px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(0,0,0,.92), transparent);
+      border-bottom: 1px solid #222;
+    }
+    .travel-back {
+      font-size: 22px;
+      color: #fff;
+      cursor: pointer;
+      padding: 4px 8px;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .travel-title {
+      flex: 1;
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .travel-scroll {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 0 28px;
+    }
+    .travel-scroll::-webkit-scrollbar { display: none; }
+    .travel-search-box {
+      padding: 12px 14px 8px;
+    }
+    .travel-search-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .travel-input {
+      flex: 1;
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 11px 14px;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+      font-family: inherit;
+    }
+    .travel-input::placeholder { color: rgba(255,255,255,.35); }
+    .travel-go-btn {
+      flex-shrink: 0;
+      padding: 11px 16px;
+      border-radius: 12px;
+      border: none;
+      background: #fe2c55;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .travel-go-btn:active { transform: scale(.97); }
+    .app.douyin .travel-go-btn { background: #fe2c55; }
+    .travel-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .travel-chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #252525;
+      color: rgba(255,255,255,.88);
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #333;
+      font-family: inherit;
+    }
+    .travel-chip:active { background: #333; }
+    .travel-guide-card {
+      margin: 10px 14px 0;
+      background: #141414;
+      border-radius: 14px;
+      border: 1px solid #252525;
+      overflow: hidden;
+    }
+    .travel-guide-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid #222;
+    }
+    .travel-guide-head span {
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(255,255,255,.9);
+    }
+    .travel-voice-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid #444;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .travel-voice-btn.playing {
+      border-color: #25f4ee;
+      color: #25f4ee;
+    }
+    .travel-section {
+      padding: 12px 14px 14px;
+      border-bottom: 1px solid #1f1f1f;
+    }
+    .travel-section:last-child { border-bottom: none; }
+    .travel-section h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: rgba(255,255,255,.45);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .travel-section ul {
+      margin: 0;
+      padding-left: 18px;
+      color: rgba(255,255,255,.88);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .travel-section li { margin-bottom: 4px; }
+    .travel-feature-wrap {
+      margin: 14px 14px 0;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid #2a2a2a;
+      position: relative;
+    }
+    .travel-feature-wrap video {
+      width: 100%;
+      display: block;
+      max-height: 220px;
+      object-fit: cover;
+      background: #000;
+    }
+    .travel-feature-label {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(0,0,0,.65);
+      color: #fff;
+    }
+    .travel-related-head {
+      margin: 18px 14px 8px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .travel-translate-row {
+      margin: 8px 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,.55);
+    }
+    .travel-translate-row select {
+      flex: 1;
+      max-width: 200px;
+      background: #1f1f1f;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .travel-related-list {
+      padding: 0 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .travel-related-card {
+      display: flex;
+      gap: 10px;
+      background: #121212;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #252525;
+    }
+    .travel-related-card .thumb {
+      width: 100px;
+      min-height: 120px;
+      flex-shrink: 0;
+      background: #000;
+      position: relative;
+    }
+    .travel-related-card .thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .travel-related-meta {
+      padding: 10px 10px 10px 0;
+      flex: 1;
+      min-width: 0;
+    }
+    .travel-related-meta .cap {
+      font-size: 13px;
+      color: rgba(255,255,255,.92);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .travel-related-meta .sub-dub {
+      margin-top: 6px;
+      font-size: 11px;
+      color: rgba(37,244,238,.85);
+      line-height: 1.35;
+      display: none;
+    }
+    .travel-related-meta .sub-dub.show { display: block; }
+    .travel-related-meta .tag {
+      margin-top: 6px;
+      font-size: 10px;
+      color: rgba(255,255,255,.4);
+    }
+    .travel-result-hidden { display: none !important; }
+
     /* Douyin-style accent (demo only — not affiliated) */
     .app.douyin .top-nav .tab.active::after {
       background: #fe2c55;
@@ -960,7 +1226,7 @@
         <div class="tab" data-i18n="tabFollowing" onclick="switchTab(this)">Following</div>
         <div class="tab active" data-i18n="tabFyp" onclick="switchTab(this)">For You</div>
         <div class="tab" data-i18n="tabFriends" onclick="switchTab(this)">Friends</div>
-        <div class="search-icon" id="searchIconMain" onclick="alertSearch()">🔍</div>
+        <div class="search-icon" id="searchIconMain" onclick="openTravelSearch()" title="">🔍</div>
       </div>
 
       <div class="feed" id="feed0"></div>
@@ -1162,6 +1428,64 @@
       <div class="preview-actions">
         <div class="preview-cancel" onclick="cancelClipGeneration()" data-i18n="discard">Discard</div>
         <div class="preview-send" onclick="confirmClipPost()" data-i18n="postClip">Post clip to comments</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Travel destination hub (from Search) -->
+  <div class="travel-layer" id="travelLayer" aria-hidden="true">
+    <div class="travel-header">
+      <div class="travel-back" id="travelBackBtn" onclick="travelBackOrClose()" title="">‹</div>
+      <div class="travel-title" id="travelHeaderTitle" data-i18n="travelSearchTitle">Search</div>
+    </div>
+    <div class="travel-scroll" id="travelScroll">
+      <div class="travel-search-box" id="travelSearchView">
+        <div class="travel-search-row">
+          <input type="search" class="travel-input" id="travelQueryInput" data-i18n-placeholder="travelSearchPh" placeholder="Country or goal, e.g. Japan, study abroad Korea" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();submitTravelSearch();}" />
+          <button type="button" class="travel-go-btn" id="travelGoBtn" data-i18n="travelGo" onclick="submitTravelSearch()">Go</button>
+        </div>
+        <div class="travel-chips" id="travelChips"></div>
+      </div>
+      <div id="travelResultView" class="travel-result-hidden">
+        <div class="travel-guide-card" id="travelGuideCard">
+          <div class="travel-guide-head">
+            <span data-i18n="travelGuideTitle">Trip guide</span>
+            <button type="button" class="travel-voice-btn" id="travelVoiceBtn" onclick="toggleTravelVoice()" aria-pressed="false">
+              <span id="travelVoiceIcon">🔊</span> <span id="travelVoiceLabel" data-i18n="travelListen">Listen</span>
+            </button>
+          </div>
+          <div class="travel-section">
+            <h3 data-i18n="travelSecOverview">Quick overview</h3>
+            <p id="travelOverviewText" style="margin:0;font-size:14px;line-height:1.5;color:rgba(255,255,255,.88);"></p>
+          </div>
+          <div class="travel-section">
+            <h3 data-i18n="travelSecBeforeTrip">Before you go · prep</h3>
+            <ul id="travelListBeforeTrip"></ul>
+          </div>
+          <div class="travel-section">
+            <h3 data-i18n="travelSecBeforeArrival">Before arrival · good to know</h3>
+            <ul id="travelListBeforeArrival"></ul>
+          </div>
+          <div class="travel-section">
+            <h3 data-i18n="travelSecAfterArrival">After arrival · on the ground</h3>
+            <ul id="travelListAfterArrival"></ul>
+          </div>
+        </div>
+        <div class="travel-feature-wrap">
+          <span class="travel-feature-label" data-i18n="travelFeaturedLabel">Intro pick</span>
+          <video id="travelFeaturedVideo" playsinline controls loop muted></video>
+        </div>
+        <div class="travel-translate-row">
+          <span data-i18n="travelTranslateLabel">Video subtitles</span>
+          <select id="travelSubtitleLang" onchange="onTravelSubtitleChange()" aria-label="subtitle language">
+            <option value="off" data-i18n="travelSubOff">Original only</option>
+            <option value="en" data-i18n="travelSubEn">English</option>
+            <option value="zh" data-i18n="travelSubZh">中文</option>
+            <option value="ja" data-i18n="travelSubJa">日本語</option>
+          </select>
+        </div>
+        <div class="travel-related-head" data-i18n="travelRelatedHead">Related videos</div>
+        <div class="travel-related-list" id="travelRelatedList"></div>
       </div>
     </div>
   </div>
@@ -1424,6 +1748,31 @@ const STRINGS = {
     alertCommentInfo: 'Only video uploads from this post’s comments',
     generationFailed: 'Generation failed.',
     clipGenFailed: 'Clip generation failed.',
+    travelSearchTitle: 'Search',
+    travelResultTitle: 'Trip hub',
+    travelSearchPh: 'Country or goal, e.g. Japan, study abroad Korea',
+    travelGo: 'Go',
+    travelChipJapan: 'Japan',
+    travelChipKorea: 'Korea',
+    travelChipFrance: 'France',
+    travelTranslateLabel: 'Video subtitles',
+    travelSubOff: 'Original only',
+    travelSubEn: 'English',
+    travelSubZh: '中文',
+    travelSubJa: '日本語',
+    travelGuideTitle: 'Trip guide',
+    travelListen: 'Listen',
+    travelPause: 'Pause',
+    travelSecOverview: 'Quick overview',
+    travelSecBeforeTrip: 'Before you go · prep',
+    travelSecBeforeArrival: 'Before arrival · good to know',
+    travelSecAfterArrival: 'After arrival · on the ground',
+    travelFeaturedLabel: 'Intro pick',
+    travelRelatedHead: 'Related videos',
+    travelTagLocal: 'Local creator',
+    travelTagTips: 'Trip tips',
+    travelSubDemo: 'Demo subtitle · tap language above',
+    travelGenericOverview: 'We matched your search to a general travel hub. For country-specific checklists, try a place name (e.g. Japan, Korea).',
   },
   zh: {
     live: '直播',
@@ -1508,6 +1857,31 @@ const STRINGS = {
     alertCommentInfo: '仅展示本帖评论里上传的视频',
     generationFailed: '生成失败。',
     clipGenFailed: '短片生成失败。',
+    travelSearchTitle: '搜索',
+    travelResultTitle: '出行助手',
+    travelSearchPh: '国家或目标，例如：日本、韩国留学',
+    travelGo: '搜索',
+    travelChipJapan: '日本',
+    travelChipKorea: '韩国',
+    travelChipFrance: '法国',
+    travelTranslateLabel: '视频字幕',
+    travelSubOff: '仅原文',
+    travelSubEn: 'English',
+    travelSubZh: '中文',
+    travelSubJa: '日本語',
+    travelGuideTitle: '行程指南',
+    travelListen: '收听',
+    travelPause: '暂停',
+    travelSecOverview: '快速了解',
+    travelSecBeforeTrip: '出发前 · 准备',
+    travelSecBeforeArrival: '抵达前 · 须知',
+    travelSecAfterArrival: '落地后 · 在目的地',
+    travelFeaturedLabel: '精选介绍',
+    travelRelatedHead: '相关视频',
+    travelTagLocal: '当地创作者',
+    travelTagTips: '旅行贴士',
+    travelSubDemo: '演示字幕 · 在上方选择语言',
+    travelGenericOverview: '暂未精确匹配到具体国家，这是通用出行说明。输入国家名（如日本、韩国）可查看更细的清单。',
   },
 };
 
@@ -1592,9 +1966,421 @@ function toggleBrand() {
   refreshAllCopy();
 }
 
-function alertSearch() { alert(t('alertSearch')); }
+function alertSearch() { openTravelSearch(); }
 function alertCreatePost() { alert(t('alertCreatePost')); }
 function alertCommentInfo() { alert(t('alertCommentInfo')); }
+
+/* ═══════════════════════════════════════════════════
+   TRAVEL SEARCH → DESTINATION HUB (prototype)
+═══════════════════════════════════════════════════ */
+const TRAVEL_DESTINATIONS = [
+  {
+    id: 'japan',
+    match: ['japan', '日本', 'tokyo', 'tokio', 'kyoto', '京都', 'osaka', '大阪', 'okinawa', '冲绳', 'study abroad japan', '日本留学'],
+    featured: 'https://download.samplelib.com/mp4/sample-5s.mp4',
+    en: {
+      title: 'Japan',
+      overview: 'Island nation blending ultra-modern cities with temples and nature. Rail passes and cash still matter outside big hubs.',
+      beforeTrip: ['Check passport validity (6+ months).', 'Visa: tourist waiver for many countries; students need COE + visa.', 'Buy a JR Pass online before arrival if you plan long Shinkansen trips.', 'Download offline maps and a transit app (e.g. NAVITIME / Google Maps).'],
+      beforeArrival: ['Register Visit Japan Web if required for your route.', 'Book popular museums / teamLab slots early.', 'Learn basic phrases; English is limited outside tourist cores.', 'Pack a small towel — many public restrooms have no dryers.'],
+      afterArrival: ['Get a Suica / PASMO IC card for trains and convenience stores.', 'Sort trash at your stay; street bins are rare.', 'Tipping is not customary.', 'Last trains end around midnight — plan night routes.'],
+    },
+    zh: {
+      title: '日本',
+      overview: '现代都市与传统寺庙、自然风光并存。铁路通票与现金在小城市仍很实用。',
+      beforeTrip: ['确保护照有效期（建议 6 个月以上）。', '签证：多数短期观光可免签；留学需在留资格认定与签证。', '若多次乘坐新干线，可提前在线购买 JR Pass。', '下载离线地图与换乘应用（如 NAVITIME / Google Maps）。'],
+      beforeArrival: ['按航线要求完成 Visit Japan Web 等入境登记。', '热门美术馆、teamLab 等建议提前预约。', '学几句基础日语；非旅游区英语沟通有限。', '随身小包纸巾/小毛巾，部分公厕无烘手机。'],
+      afterArrival: ['办理 Suica / PASMO 交通 IC 卡，便利店也可刷。', '住宿地做好垃圾分类；街头垃圾桶较少。', '无小费文化。', '末班地铁/电车较早，夜间出行先查末班车。'],
+    },
+    related: [
+      { src: 'https://download.samplelib.com/mp4/sample-10s.mp4', tag: 'local',
+        en: { cap: 'Tokyo first-timer walkthrough: neighborhoods & etiquette' },
+        zh: { cap: '东京新手散步：区域选择与礼仪小贴士' },
+        dub: { en: '[Demo EN] Practical pacing for day-one in Tokyo.', zh: '[演示中文] 东京首日行程节奏建议。', ja: '[デモ] 初日の東京歩き方のヒント。' } },
+      { src: 'https://download.samplelib.com/mp4/sample-15s.mp4', tag: 'tips',
+        en: { cap: 'What I packed for 2 weeks in Japan (study abroad edition)' },
+        zh: { cap: '日本两周行（留学向）我都装了什么' },
+        dub: { en: '[Demo EN] Packing list tuned for classes + weekend trips.', zh: '[演示中文] 兼顾上课与周末游的行李清单。', ja: '[デモ] 留学＋小旅行向け荷物の話。' } },
+    ],
+  },
+  {
+    id: 'korea',
+    match: ['korea', '韩国', '韓國', 'seoul', '首尔', '首爾', 'busan', '釜山', 'study abroad korea', '韩国留学'],
+    featured: 'https://download.samplelib.com/mp4/sample-10s.mp4',
+    en: {
+      title: 'South Korea',
+      overview: 'High-energy cities, K-culture, and excellent public transit. T-money card covers most urban mobility.',
+      beforeTrip: ['Passport + check K-ETA / visa rules for your nationality.', 'Students: confirm admission letter and D-2 requirements.', 'Unlock phone or confirm roaming / eSIM for Korea.', 'Copy important addresses in Korean for taxis.'],
+      beforeArrival: ['Install KakaoMap / Naver Map (Google Maps is incomplete).', 'Note holidays — many services close on Seollal/Chuseok.', 'Learn Hangul basics — it helps with signs and menus.', 'Bookmark your embassy / school emergency contacts.'],
+      afterArrival: ['Buy and top up T-money at convenience stores.', 'Cafe culture is strong — good for studying, mind purchase rules.', 'Trash sorting is strict in many apartments.', 'Subway last trains ~midnight; night buses vary by city.'],
+    },
+    zh: {
+      title: '韩国',
+      overview: '都市节奏快、流行文化与公共交通发达。T-money 卡可覆盖大部分城市出行。',
+      beforeTrip: ['护照与 K-ETA / 签证政策以国籍为准，提前核对。', '留学：确认标准入学许可与 D-2 材料清单。', '手机解锁或准备漫游 / eSIM。', '把常用地址准备韩文版本，打车更方便。'],
+      beforeArrival: ['安装 KakaoMap / Naver（谷歌地图在韩国不完整）。', '留意春节/中秋等传统节日，部分服务休息。', '学一点韩文字母，对看路牌与菜单很有帮助。', '保存学校与国际处紧急联系方式。'],
+      afterArrival: ['在便利店购买并充值 T-money。', '咖啡馆适合学习，留意是否需点单消费。', '不少公寓垃圾分类严格。', '地铁末班约午夜；夜间巴士因城市而异。'],
+    },
+    related: [
+      { src: 'https://download.samplelib.com/mp4/sample-5s.mp4', tag: 'local',
+        en: { cap: 'Seoul subway explained: transfers you will actually use' },
+        zh: { cap: '首尔地铁换乘：新手最常用的几种走法' },
+        dub: { en: '[Demo EN] Transfer tips for major interchange stations.', zh: '[演示中文] 大站换乘注意事项。', ja: '[デモ] ソウル地下鉄の乗り換えのコツ。' } },
+      { src: 'https://download.samplelib.com/mp4/sample-15s.mp4', tag: 'tips',
+        en: { cap: 'Study abroad in Korea: bank account + phone plan timeline' },
+        zh: { cap: '韩国留学：电话卡与开户时间线（经验谈）' },
+        dub: { en: '[Demo EN] Week-by-week admin checklist.', zh: '[演示中文] 按周的行政事项清单。', ja: '[デモ] 韓国留学の手続きタイムライン。' } },
+    ],
+  },
+  {
+    id: 'france',
+    match: ['france', '法国', '法國', 'paris', '巴黎', 'lyon', 'nice', 'study abroad france', '法国留学'],
+    featured: 'https://download.samplelib.com/mp4/sample-15s.mp4',
+    en: {
+      title: 'France',
+      overview: 'World-class museums, regional food, and dense rail networks. Paris is not all of France — consider side trips.',
+      beforeTrip: ['Schengen visa rules if applicable; students need campus housing proof.', 'Book Louvre / Orsay tickets online.', 'Notify bank for card use in EU.', 'Pack a universal adapter (Type C/E).'],
+      beforeArrival: ['Learn basic French greetings — politeness opens doors.', 'Download offline RATP / SNCF apps.', 'Airport-to-city: RER B / buses — watch pickpockets in crowds.', 'Validate paper train tickets before boarding when required.'],
+      afterArrival: ['Navigo / carnet tickets in Île-de-France; elsewhere check local passes.', 'Meal times skew later; many kitchens close between lunch and dinner.', 'Pharmacies have green crosses; they advise on minor ailments.', 'Keep a photo of your visa/residence permit on your phone.'],
+    },
+    zh: {
+      title: '法国',
+      overview: '博物馆与地区美食丰富，铁路网密集。巴黎之外还有很值得的高铁小城。',
+      beforeTrip: ['如需申根签证，按领馆清单准备；留学需提供住房证明等。', '卢浮宫、奥赛等热门场馆建议网上预约。', '提前通知银行开通欧洲刷卡。', '携带欧标转换插头（C/E 型）。'],
+      beforeArrival: ['学几句法语问候，礼貌用语很加分。', '离线保存 RATP / SNCF 等出行应用。', '机场进城注意拥挤区防盗（RER B 等）。', '纸质火车票在部分线路需打孔/检票后再上车。'],
+      afterArrival: ['巴黎大区 Navigo / 次票规则与外省通票不同，先查清。', '用餐时间偏晚，午晚餐之间不少厨房休息。', '绿十字药店可咨询常见轻微不适。', '在手机留存签证/居留许可照片备份。'],
+    },
+    related: [
+      { src: 'https://download.samplelib.com/mp4/sample-5s.mp4', tag: 'tips',
+        en: { cap: 'Paris weekender: tickets, scams to avoid, and museum pacing' },
+        zh: { cap: '巴黎周末：门票节奏与常见防骗提醒' },
+        dub: { en: '[Demo EN] Scam patterns near landmarks — stay aware, not anxious.', zh: '[演示中文] 景点周边常见套路与应对。', ja: '[デモ] パリ観光の注意点（デモ字幕）。' } },
+      { src: 'https://download.samplelib.com/mp4/sample-10s.mp4', tag: 'local',
+        en: { cap: 'Living in Lyon — trains, groceries, and student discounts' },
+        zh: { cap: '住在里昂：火车、超市与学生优惠' },
+        dub: { en: '[Demo EN] Student discounts you can ask for.', zh: '[演示中文] 可主动询问的学生折扣。', ja: '[デモ] リヨン生活のヒント。' } },
+    ],
+  },
+];
+
+let travelLayerOpen = false;
+let travelShowingResults = false;
+let travelLastQuery = '';
+let travelVoicePlaying = false;
+let travelCurrentPayload = null;
+
+function resolveTravelDestinationKey(q) {
+  const s = String(q || '').trim().toLowerCase();
+  if (!s) return null;
+  for (const d of TRAVEL_DESTINATIONS) {
+    for (const m of d.match) {
+      if (s.includes(String(m).toLowerCase())) return d.id;
+    }
+  }
+  return null;
+}
+
+function getTravelPayload(rawQuery) {
+  const loc = appLocale === 'zh' ? 'zh' : 'en';
+  const id = resolveTravelDestinationKey(rawQuery);
+  if (id) {
+    const d = TRAVEL_DESTINATIONS.find(x => x.id === id);
+    return {
+      id: d.id,
+      generic: false,
+      featured: d.featured,
+      copy: d[loc],
+      related: d.related,
+    };
+  }
+  const title = String(rawQuery || '').trim() || (loc === 'zh' ? '目的地' : 'Your trip');
+  const bullets = loc === 'zh'
+    ? ['核对护照与签证/入境材料。', '购买旅行保险并保存紧急联系方式。', '提前下载离线地图与交通应用。', '了解当地支付习惯（卡 / 现金 / 移动支付）。', '记录大使馆或学校国际处电话。']
+    : ['Verify passport and visa / entry documents.', 'Get travel insurance and save emergency contacts.', 'Download offline maps and transit apps.', 'Learn local payment norms (card / cash / wallets).', 'Save embassy or school international office numbers.'];
+  return {
+    id: 'generic',
+    generic: true,
+    featured: 'https://download.samplelib.com/mp4/sample-10s.mp4',
+    copy: {
+      title,
+      overview: t('travelGenericOverview'),
+      beforeTrip: bullets.slice(0, 3),
+      beforeArrival: bullets.slice(2, 5),
+      afterArrival: bullets.slice(1, 4),
+    },
+    related: [
+      { src: 'https://download.samplelib.com/mp4/sample-5s.mp4', tag: 'tips',
+        en: { cap: 'General packing: adapters, meds, and copies of documents' },
+        zh: { cap: '通用行李：转换插头、常用药与证件复印件' },
+        dub: { en: '[Demo EN] Keep scans of passport and visa separate from originals.', zh: '[演示中文] 护照与签证扫描件与原件分开放。', ja: '[デモ] パスポートのコピーを別保管。' } },
+      { src: 'https://download.samplelib.com/mp4/sample-15s.mp4', tag: 'local',
+        en: { cap: 'How I research a new country in one evening (demo)' },
+        zh: { cap: '一晚搞清新国家行前信息（演示）' },
+        dub: { en: '[Demo EN] Checklist method for any destination.', zh: '[演示中文] 通用清单法，适用于多数国家。', ja: '[デモ] どの国にも使える調べ方。' } },
+    ],
+  };
+}
+
+function travelFillList(ul, items) {
+  if (!ul) return;
+  ul.innerHTML = '';
+  (items || []).forEach(text => {
+    const li = document.createElement('li');
+    li.textContent = text;
+    ul.appendChild(li);
+  });
+}
+
+function stopTravelMediaAndSpeech() {
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  travelVoicePlaying = false;
+  const fv = document.getElementById('travelFeaturedVideo');
+  if (fv) { fv.pause(); fv.removeAttribute('src'); fv.load(); }
+  document.querySelectorAll('#travelRelatedList video').forEach(v => {
+    try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) {}
+  });
+  const btn = document.getElementById('travelVoiceBtn');
+  const icon = document.getElementById('travelVoiceIcon');
+  const lab = document.getElementById('travelVoiceLabel');
+  if (btn) { btn.classList.remove('playing'); btn.setAttribute('aria-pressed', 'false'); }
+  if (icon) icon.textContent = '🔊';
+  if (lab) lab.textContent = t('travelListen');
+}
+
+function buildTravelSpeechText(payload) {
+  if (!payload || !payload.copy) return '';
+  const c = payload.copy;
+  const parts = [
+    c.title,
+    t('travelSecOverview'), c.overview,
+    t('travelSecBeforeTrip'), ...(c.beforeTrip || []),
+    t('travelSecBeforeArrival'), ...(c.beforeArrival || []),
+    t('travelSecAfterArrival'), ...(c.afterArrival || []),
+  ];
+  return parts.join('. ');
+}
+
+function toggleTravelVoice() {
+  const payload = travelCurrentPayload;
+  if (!payload) return;
+  if (!window.speechSynthesis) {
+    alert(appLocale === 'zh' ? '当前浏览器不支持语音朗读。' : 'Speech synthesis is not available in this browser.');
+    return;
+  }
+  if (travelVoicePlaying) {
+    speechSynthesis.cancel();
+    travelVoicePlaying = false;
+    const lab = document.getElementById('travelVoiceLabel');
+    const btn = document.getElementById('travelVoiceBtn');
+    const icon = document.getElementById('travelVoiceIcon');
+    if (lab) lab.textContent = t('travelListen');
+    if (btn) { btn.classList.remove('playing'); btn.setAttribute('aria-pressed', 'false'); }
+    if (icon) icon.textContent = '🔊';
+    return;
+  }
+  const text = buildTravelSpeechText(payload);
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = appLocale === 'zh' ? 'zh-CN' : 'en-US';
+  u.rate = 0.95;
+  u.onend = u.onerror = () => {
+    travelVoicePlaying = false;
+    const lab = document.getElementById('travelVoiceLabel');
+    const btn = document.getElementById('travelVoiceBtn');
+    const icon = document.getElementById('travelVoiceIcon');
+    if (lab) lab.textContent = t('travelListen');
+    if (btn) { btn.classList.remove('playing'); btn.setAttribute('aria-pressed', 'false'); }
+    if (icon) icon.textContent = '🔊';
+  };
+  travelVoicePlaying = true;
+  const lab = document.getElementById('travelVoiceLabel');
+  const btn = document.getElementById('travelVoiceBtn');
+  const icon = document.getElementById('travelVoiceIcon');
+  if (lab) lab.textContent = t('travelPause');
+  if (btn) { btn.classList.add('playing'); btn.setAttribute('aria-pressed', 'true'); }
+  if (icon) icon.textContent = '⏸';
+  speechSynthesis.speak(u);
+}
+
+function onTravelSubtitleChange() {
+  const sel = document.getElementById('travelSubtitleLang');
+  const lang = sel ? sel.value : 'off';
+  document.querySelectorAll('#travelRelatedList [data-dub]').forEach(row => {
+    const dub = row.querySelector('.sub-dub');
+    if (!dub) return;
+    if (lang === 'off') {
+      dub.classList.remove('show');
+      dub.textContent = '';
+      return;
+    }
+    const key = row.getAttribute('data-dub-' + lang);
+    if (key) {
+      dub.textContent = key;
+      dub.classList.add('show');
+    } else {
+      dub.textContent = t('travelSubDemo');
+      dub.classList.add('show');
+    }
+  });
+}
+
+function renderTravelDestination(query, opts) {
+  const keepSubtitle = opts && opts.keepSubtitle;
+  travelLastQuery = String(query || '').trim();
+  const payload = getTravelPayload(travelLastQuery);
+  travelCurrentPayload = payload;
+  const c = payload.copy;
+  document.getElementById('travelHeaderTitle').textContent = c.title;
+  document.getElementById('travelOverviewText').textContent = c.overview;
+  travelFillList(document.getElementById('travelListBeforeTrip'), c.beforeTrip);
+  travelFillList(document.getElementById('travelListBeforeArrival'), c.beforeArrival);
+  travelFillList(document.getElementById('travelListAfterArrival'), c.afterArrival);
+  const fv = document.getElementById('travelFeaturedVideo');
+  stopTravelMediaAndSpeech();
+  if (fv) {
+    fv.src = payload.featured;
+    fv.muted = true;
+    fv.play().catch(() => {});
+  }
+  const list = document.getElementById('travelRelatedList');
+  if (list) {
+    list.innerHTML = '';
+    const loc = appLocale === 'zh' ? 'zh' : 'en';
+    (payload.related || []).forEach(r => {
+      const cap = (r[loc] && r[loc].cap) ? r[loc].cap : (r.en && r.en.cap) || '';
+      const card = document.createElement('div');
+      card.className = 'travel-related-card';
+      card.setAttribute('data-dub', '1');
+      if (r.dub) {
+        card.setAttribute('data-dub-en', r.dub.en || '');
+        card.setAttribute('data-dub-zh', r.dub.zh || '');
+        card.setAttribute('data-dub-ja', r.dub.ja || '');
+      }
+      const tagKey = r.tag === 'local' ? 'travelTagLocal' : 'travelTagTips';
+      card.innerHTML =
+        '<div class="thumb"><video playsinline muted loop autoplay src="' + r.src + '"></video></div>' +
+        '<div class="travel-related-meta">' +
+        '<div class="cap"></div><div class="sub-dub"></div><div class="tag">' + t(tagKey) + '</div></div>';
+      card.querySelector('.cap').textContent = cap;
+      list.appendChild(card);
+    });
+  }
+  const subSel = document.getElementById('travelSubtitleLang');
+  if (subSel && !keepSubtitle) subSel.value = 'off';
+  onTravelSubtitleChange();
+}
+
+function buildTravelChips() {
+  const wrap = document.getElementById('travelChips');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  [
+    { q: 'Japan', i18n: 'travelChipJapan' },
+    { q: 'Korea', i18n: 'travelChipKorea' },
+    { q: 'France', i18n: 'travelChipFrance' },
+  ].forEach(ch => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'travel-chip';
+    b.textContent = t(ch.i18n);
+    b.onclick = () => {
+      const inp = document.getElementById('travelQueryInput');
+      if (inp) inp.value = ch.q;
+      submitTravelSearch();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+function openTravelSearch() {
+  const layer = document.getElementById('travelLayer');
+  if (!layer) return;
+  travelLayerOpen = true;
+  travelShowingResults = false;
+  layer.classList.add('open');
+  layer.setAttribute('aria-hidden', 'false');
+  document.getElementById('travelSearchView').classList.remove('travel-result-hidden');
+  document.getElementById('travelResultView').classList.add('travel-result-hidden');
+  document.getElementById('travelHeaderTitle').textContent = t('travelSearchTitle');
+  const inp = document.getElementById('travelQueryInput');
+  if (inp) { inp.value = ''; inp.focus(); }
+  stopTravelMediaAndSpeech();
+  buildTravelChips();
+  applyDataI18nAttrs();
+  const scroll = document.getElementById('travelScroll');
+  if (scroll) scroll.scrollTop = 0;
+}
+
+function closeTravelSearch() {
+  const layer = document.getElementById('travelLayer');
+  if (!layer) return;
+  travelLayerOpen = false;
+  travelShowingResults = false;
+  layer.classList.remove('open');
+  layer.setAttribute('aria-hidden', 'true');
+  stopTravelMediaAndSpeech();
+}
+
+function travelBackOrClose() {
+  if (travelShowingResults) {
+    travelShowingResults = false;
+    document.getElementById('travelSearchView').classList.remove('travel-result-hidden');
+    document.getElementById('travelResultView').classList.add('travel-result-hidden');
+    document.getElementById('travelHeaderTitle').textContent = t('travelSearchTitle');
+    stopTravelMediaAndSpeech();
+    const scroll = document.getElementById('travelScroll');
+    if (scroll) scroll.scrollTop = 0;
+    return;
+  }
+  closeTravelSearch();
+}
+
+function submitTravelSearch() {
+  const inp = document.getElementById('travelQueryInput');
+  const q = inp ? inp.value.trim() : '';
+  if (!q) {
+    alert(appLocale === 'zh' ? '请输入国家名或旅行目标。' : 'Type a country or travel goal.');
+    return;
+  }
+  travelShowingResults = true;
+  document.getElementById('travelSearchView').classList.add('travel-result-hidden');
+  document.getElementById('travelResultView').classList.remove('travel-result-hidden');
+  renderTravelDestination(q);
+  applyDataI18nAttrs();
+  document.getElementById('travelHeaderTitle').textContent = travelCurrentPayload && travelCurrentPayload.copy
+    ? travelCurrentPayload.copy.title
+    : t('travelResultTitle');
+  const scroll = document.getElementById('travelScroll');
+  if (scroll) scroll.scrollTop = 0;
+}
+
+function refreshTravelLayerI18n() {
+  if (!travelLayerOpen) return;
+  if (!travelShowingResults) buildTravelChips();
+  const sub = document.getElementById('travelSubtitleLang');
+  if (sub) {
+    const v = sub.value;
+    sub.querySelector('option[value="off"]').textContent = t('travelSubOff');
+    sub.querySelector('option[value="en"]').textContent = t('travelSubEn');
+    sub.querySelector('option[value="zh"]').textContent = t('travelSubZh');
+    sub.querySelector('option[value="ja"]').textContent = t('travelSubJa');
+    sub.value = ['off', 'en', 'zh', 'ja'].includes(v) ? v : 'off';
+  }
+  if (travelShowingResults && travelLastQuery) {
+    const subKeep = document.getElementById('travelSubtitleLang');
+    const prevSub = subKeep ? subKeep.value : 'off';
+    renderTravelDestination(travelLastQuery, { keepSubtitle: true });
+    if (subKeep) {
+      subKeep.value = ['off', 'en', 'zh', 'ja'].includes(prevSub) ? prevSub : 'off';
+      onTravelSubtitleChange();
+    }
+    applyDataI18nAttrs();
+    document.getElementById('travelHeaderTitle').textContent = travelCurrentPayload && travelCurrentPayload.copy
+      ? travelCurrentPayload.copy.title
+      : t('travelResultTitle');
+  } else {
+    document.getElementById('travelHeaderTitle').textContent = t('travelSearchTitle');
+  }
+}
 
 function refreshAllCopy() {
   document.documentElement.lang = appLocale === 'zh' ? 'zh-Hans' : 'en';
@@ -1622,6 +2408,7 @@ function refreshAllCopy() {
   if (cvCulture && cvCulture.classList.contains('open')) {
     buildCultureGrid();
   }
+  refreshTravelLayerI18n();
 }
 
 function rebuildFeeds() {
