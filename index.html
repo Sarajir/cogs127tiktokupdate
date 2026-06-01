@@ -938,7 +938,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      background: linear-gradient(180deg, rgba(0,0,0,.92), transparent);
+      background: #0a0a0a;
       border-bottom: 1px solid #222;
     }
     .travel-back {
@@ -948,11 +948,143 @@
       padding: 4px 8px;
       line-height: 1;
       -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
     }
     .travel-title {
       flex: 1;
       font-size: 17px;
       font-weight: 700;
+    }
+    /* destination name shown as a search-bar pill */
+    .travel-dest-bar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #1c1c1c;
+      border-radius: 12px;
+      padding: 10px 14px;
+      gap: 8px;
+    }
+    .travel-dest-name {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .travel-dest-search-icon {
+      font-size: 17px;
+      color: rgba(255,255,255,.65);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    /* tab bar */
+    .travel-tab-bar {
+      display: none;
+      flex-shrink: 0;
+      border-bottom: 1px solid #222;
+      padding: 0 4px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .travel-tab-bar::-webkit-scrollbar { display: none; }
+    .travel-tab-bar.visible { display: flex; }
+    .travel-tab-item {
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255,255,255,.45);
+      cursor: pointer;
+      position: relative;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .travel-tab-item.active { color: #fff; }
+    .travel-tab-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 2px;
+      background: #fff;
+      border-radius: 2px;
+    }
+    /* ...more in trip guide */
+    .travel-guide-more-row {
+      text-align: right;
+      padding: 2px 14px 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,.45);
+      cursor: pointer;
+    }
+    /* category chips in result view */
+    .travel-result-chips {
+      padding: 10px 14px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .travel-chip-row {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .travel-chip-row::-webkit-scrollbar { display: none; }
+    .travel-cat-chip {
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #252525;
+      color: rgba(255,255,255,.88);
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #333;
+      white-space: nowrap;
+      font-family: inherit;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .travel-cat-chip.active {
+      background: #444;
+      border-color: #fff;
+      color: #fff;
+    }
+    .travel-cat-chip.plus-chip {
+      padding: 7px 11px;
+      font-size: 15px;
+      color: rgba(255,255,255,.6);
+    }
+    /* 2×2 video grid */
+    .travel-video-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      padding: 10px 14px 28px;
+    }
+    .travel-grid-cell {
+      border-radius: 10px;
+      overflow: hidden;
+      background: #111;
+      aspect-ratio: 4/5;
+      position: relative;
+      cursor: pointer;
+    }
+    .travel-grid-cell video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .travel-grid-cell .grid-tag {
+      position: absolute;
+      bottom: 6px; left: 7px;
+      font-size: 10px;
+      color: rgba(255,255,255,.75);
+      background: rgba(0,0,0,.5);
+      padding: 2px 6px;
+      border-radius: 4px;
     }
     .travel-scroll {
       flex: 1;
@@ -1458,58 +1590,86 @@
   <div class="travel-layer" id="travelLayer" aria-hidden="true">
     <div class="travel-header">
       <div class="travel-back" id="travelBackBtn" onclick="travelBackOrClose()" title="">‹</div>
+      <!-- search state: plain title -->
       <div class="travel-title" id="travelHeaderTitle" data-i18n="travelSearchTitle">Search</div>
+      <!-- result state: destination name bar (hidden until result shown) -->
+      <div class="travel-dest-bar" id="travelDestBar" style="display:none;">
+        <div class="travel-dest-name" id="travelDestName">—</div>
+        <div class="travel-dest-search-icon" onclick="travelBackOrClose()">🔍</div>
+      </div>
+    </div>
+    <!-- tab bar (shown only in result state) -->
+    <div class="travel-tab-bar" id="travelTabBar">
+      <div class="travel-tab-item active" data-tab="location" onclick="switchTravelTab(this)">Location</div>
+      <div class="travel-tab-item" data-tab="activity" onclick="switchTravelTab(this)">Activity</div>
+      <div class="travel-tab-item" data-tab="food" onclick="switchTravelTab(this)">Food</div>
+      <div class="travel-tab-item" data-tab="transport" onclick="switchTravelTab(this)">Transport</div>
     </div>
     <div class="travel-scroll" id="travelScroll">
+      <!-- ── SEARCH VIEW ── -->
       <div class="travel-search-box" id="travelSearchView">
         <div class="travel-search-row">
-          <input type="search" class="travel-input" id="travelQueryInput" data-i18n-placeholder="travelSearchPh" placeholder="Country or goal, e.g. Japan, study abroad Korea" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();submitTravelSearch();}" />
+          <input type="search" class="travel-input" id="travelQueryInput" data-i18n-placeholder="travelSearchPh" placeholder="Country or city, e.g. Japan, San Diego" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();submitTravelSearch();}" />
           <button type="button" class="travel-go-btn" id="travelGoBtn" data-i18n="travelGo" onclick="submitTravelSearch()">Go</button>
         </div>
         <div class="travel-chips" id="travelChips"></div>
       </div>
+      <!-- ── RESULT VIEW ── -->
       <div id="travelResultView" class="travel-result-hidden">
-        <div class="travel-guide-card" id="travelGuideCard">
+        <!-- Trip Guide card -->
+        <div class="travel-guide-card" id="travelGuideCard" style="max-height:none;">
           <div class="travel-guide-head">
-            <span data-i18n="travelGuideTitle">Trip guide</span>
+            <span data-i18n="travelGuideTitle">Trip Guide</span>
             <button type="button" class="travel-voice-btn" id="travelVoiceBtn" onclick="toggleTravelVoice()" aria-pressed="false">
-              <span id="travelVoiceIcon">🔊</span> <span id="travelVoiceLabel" data-i18n="travelListen">Listen</span>
+              <span id="travelVoiceIcon">🔊</span> <span id="travelVoiceLabel" data-i18n="travelListen">Audio</span>
             </button>
           </div>
-          <div class="travel-guide-scroll-inner" id="travelGuideScrollInner">
-          <div class="travel-section">
-            <h3 data-i18n="travelSecOverview">Quick overview</h3>
-            <p id="travelOverviewText" style="margin:0;font-size:14px;line-height:1.5;color:rgba(255,255,255,.88);"></p>
+          <div class="travel-guide-scroll-inner" id="travelGuideScrollInner" style="max-height:none;overflow:visible;">
+            <!-- only Before You Go shown; overview hidden -->
+            <div class="travel-section" id="travelBeforeYouGoSection">
+              <h3 data-i18n="travelSecBeforeTrip">Before you go</h3>
+              <ul id="travelListBeforeTrip"></ul>
+            </div>
           </div>
-          <div class="travel-section">
-            <h3 data-i18n="travelSecBeforeTrip">Before you go · prep</h3>
-            <ul id="travelListBeforeTrip"></ul>
-          </div>
-          <div class="travel-section">
-            <h3 data-i18n="travelSecBeforeArrival">Before arrival · good to know</h3>
-            <ul id="travelListBeforeArrival"></ul>
-          </div>
-          <div class="travel-section">
-            <h3 data-i18n="travelSecAfterArrival">After arrival · on the ground</h3>
-            <ul id="travelListAfterArrival"></ul>
-          </div>
+          <div class="travel-guide-more-row" id="travelGuideMoreRow" onclick="expandTravelGuide()">... more</div>
+        </div>
+        <!-- hidden: overview + extra sections shown on expand -->
+        <div id="travelGuideExpanded" style="display:none;">
+          <div class="travel-guide-card" style="margin-top:6px;">
+            <div class="travel-guide-scroll-inner" style="max-height:none;overflow:visible;">
+              <div class="travel-section">
+                <h3 data-i18n="travelSecOverview">Quick overview</h3>
+                <p id="travelOverviewText" style="margin:0;font-size:14px;line-height:1.5;color:rgba(255,255,255,.88);"></p>
+              </div>
+              <div class="travel-section">
+                <h3 data-i18n="travelSecBeforeArrival">Before arrival</h3>
+                <ul id="travelListBeforeArrival"></ul>
+              </div>
+              <div class="travel-section">
+                <h3 data-i18n="travelSecAfterArrival">After arrival</h3>
+                <ul id="travelListAfterArrival"></ul>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="travel-feature-wrap">
-          <span class="travel-feature-label" data-i18n="travelFeaturedLabel">Intro pick</span>
-          <video id="travelFeaturedVideo" playsinline controls loop muted></video>
+        <!-- category chips -->
+        <div class="travel-result-chips" id="travelResultChips">
+          <div class="travel-chip-row" id="travelChipRow1"></div>
+          <div class="travel-chip-row" id="travelChipRow2"></div>
         </div>
-        <div class="travel-translate-row">
-          <span data-i18n="travelTranslateLabel">Video subtitles</span>
-          <select id="travelSubtitleLang" onchange="onTravelSubtitleChange()" aria-label="subtitle language">
-            <option value="off" data-i18n="travelSubOff">Original only</option>
-            <option value="en" data-i18n="travelSubEn">English</option>
-            <option value="zh" data-i18n="travelSubZh">中文</option>
-            <option value="ja" data-i18n="travelSubJa">日本語</option>
+        <!-- 2×2 video grid -->
+        <div class="travel-video-grid" id="travelVideoGrid"></div>
+        <!-- hidden elements kept for backward-compat with JS -->
+        <div style="display:none;">
+          <video id="travelFeaturedVideo" playsinline loop muted></video>
+          <select id="travelSubtitleLang" onchange="onTravelSubtitleChange()">
+            <option value="off">Original only</option>
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+            <option value="ja">日本語</option>
           </select>
+          <div id="travelRelatedList"></div>
         </div>
-        <div class="travel-related-head" data-i18n="travelRelatedHead">Related videos</div>
-        <div class="travel-related-list" id="travelRelatedList"></div>
       </div>
     </div>
   </div>
@@ -2402,30 +2562,122 @@ function onTravelSubtitleChange() {
   });
 }
 
+function switchTravelTab(el) {
+  document.querySelectorAll('.travel-tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function expandTravelGuide() {
+  const expanded = document.getElementById('travelGuideExpanded');
+  const moreRow = document.getElementById('travelGuideMoreRow');
+  if (!expanded) return;
+  if (expanded.style.display === 'none') {
+    expanded.style.display = 'block';
+    if (moreRow) moreRow.style.display = 'none';
+  } else {
+    expanded.style.display = 'none';
+    if (moreRow) moreRow.style.display = '';
+  }
+}
+
+function buildResultChips() {
+  const row1 = document.getElementById('travelChipRow1');
+  const row2 = document.getElementById('travelChipRow2');
+  if (!row1 || !row2) return;
+  const chips1 = ['+ Street Food', '+ Locations', '+ Night Market', '+ Landmark'];
+  const chips2 = ['+ Budget', '+ Activity', '+ Pop-up', '+ Festival', '+ Vibe'];
+  row1.innerHTML = chips1.map((ch, i) =>
+    '<button class="travel-cat-chip' + (i === 1 ? ' active' : '') + '" onclick="toggleResultChip(this)">' + ch + '</button>'
+  ).join('');
+  row2.innerHTML = chips2.map((ch, i) =>
+    '<button class="travel-cat-chip' + (i === 4 ? ' active' : '') + '" onclick="toggleResultChip(this)">' + ch + '</button>'
+  ).join('') + '<button class="travel-cat-chip plus-chip" onclick="addCustomChip()">+</button>';
+}
+
+function toggleResultChip(el) {
+  el.classList.toggle('active');
+}
+
+function addCustomChip() {
+  const name = prompt('Add category:');
+  if (!name) return;
+  const row2 = document.getElementById('travelChipRow2');
+  if (!row2) return;
+  const plusBtn = row2.querySelector('.plus-chip');
+  const btn = document.createElement('button');
+  btn.className = 'travel-cat-chip active';
+  btn.textContent = '+ ' + name;
+  btn.onclick = () => toggleResultChip(btn);
+  row2.insertBefore(btn, plusBtn);
+}
+
 function renderTravelDestination(query, opts) {
   const keepSubtitle = opts && opts.keepSubtitle;
   travelLastQuery = String(query || '').trim();
   const payload = getTravelPayload(travelLastQuery);
   travelCurrentPayload = payload;
   const c = payload.copy;
-  document.getElementById('travelHeaderTitle').textContent = c.title;
+
+  // update header: switch to destination bar
+  const titleEl = document.getElementById('travelHeaderTitle');
+  const destBar = document.getElementById('travelDestBar');
+  const destName = document.getElementById('travelDestName');
+  if (titleEl) titleEl.style.display = 'none';
+  if (destBar) destBar.style.display = 'flex';
+  if (destName) destName.textContent = c.title;
+
+  // show tab bar
+  const tabBar = document.getElementById('travelTabBar');
+  if (tabBar) tabBar.classList.add('visible');
+
+  // collapse expanded guide on re-render
+  const expanded = document.getElementById('travelGuideExpanded');
+  const moreRow = document.getElementById('travelGuideMoreRow');
+  if (expanded) expanded.style.display = 'none';
+  if (moreRow) moreRow.style.display = '';
+
+  // fill before-you-go (first 2 items shown, rest hidden behind ...more)
+  const beforeList = document.getElementById('travelListBeforeTrip');
+  travelFillList(beforeList, (c.beforeTrip || []).slice(0, 2));
+
+  // fill expanded sections
   document.getElementById('travelOverviewText').textContent = c.overview;
-  travelFillList(document.getElementById('travelListBeforeTrip'), c.beforeTrip);
   travelFillList(document.getElementById('travelListBeforeArrival'), c.beforeArrival);
   travelFillList(document.getElementById('travelListAfterArrival'), c.afterArrival);
+
+  // keep featured video src for compat
   const fv = document.getElementById('travelFeaturedVideo');
   stopTravelMediaAndSpeech();
-  if (fv) {
-    fv.src = payload.featured;
-    fv.muted = true;
-    fv.play().catch(() => {});
-  }
-  const list = document.getElementById('travelRelatedList');
-  if (list) {
-    list.innerHTML = '';
+  if (fv) { fv.src = payload.featured; }
+
+  // build chips
+  buildResultChips();
+
+  // build 2×2 video grid
+  const grid = document.getElementById('travelVideoGrid');
+  if (grid) {
+    grid.innerHTML = '';
     const loc = appLocale === 'zh' ? 'zh' : 'en';
     (payload.related || []).forEach(r => {
       const cap = (r[loc] && r[loc].cap) ? r[loc].cap : (r.en && r.en.cap) || '';
+      const tagKey = r.tag === 'local' ? 'travelTagLocal' : 'travelTagTips';
+      const cell = document.createElement('div');
+      cell.className = 'travel-grid-cell';
+      cell.innerHTML = '<video playsinline muted loop autoplay src="' + r.src + '"></video>' +
+        '<div class="grid-tag">' + t(tagKey) + '</div>';
+      cell.addEventListener('click', () => {
+        const v = cell.querySelector('video');
+        if (v) { v.muted = false; v.play().catch(() => {}); }
+      });
+      grid.appendChild(cell);
+    });
+  }
+
+  // keep related list in sync for subtitle compat
+  const list = document.getElementById('travelRelatedList');
+  if (list) {
+    list.innerHTML = '';
+    (payload.related || []).forEach(r => {
       const card = document.createElement('div');
       card.className = 'travel-related-card';
       card.setAttribute('data-dub', '1');
@@ -2434,15 +2686,10 @@ function renderTravelDestination(query, opts) {
         card.setAttribute('data-dub-zh', r.dub.zh || '');
         card.setAttribute('data-dub-ja', r.dub.ja || '');
       }
-      const tagKey = r.tag === 'local' ? 'travelTagLocal' : 'travelTagTips';
-      card.innerHTML =
-        '<div class="thumb"><video playsinline muted loop autoplay src="' + r.src + '"></video></div>' +
-        '<div class="travel-related-meta">' +
-        '<div class="cap"></div><div class="sub-dub"></div><div class="tag">' + t(tagKey) + '</div></div>';
-      card.querySelector('.cap').textContent = cap;
       list.appendChild(card);
     });
   }
+
   const subSel = document.getElementById('travelSubtitleLang');
   if (subSel && !keepSubtitle) subSel.value = 'off';
   onTravelSubtitleChange();
@@ -2484,7 +2731,13 @@ function openTravelSearch() {
   layer.setAttribute('aria-hidden', 'false');
   document.getElementById('travelSearchView').classList.remove('travel-result-hidden');
   document.getElementById('travelResultView').classList.add('travel-result-hidden');
-  document.getElementById('travelHeaderTitle').textContent = t('travelSearchTitle');
+  // ensure search-state header
+  const titleEl = document.getElementById('travelHeaderTitle');
+  const destBar = document.getElementById('travelDestBar');
+  const tabBar = document.getElementById('travelTabBar');
+  if (titleEl) { titleEl.style.display = ''; titleEl.textContent = t('travelSearchTitle'); }
+  if (destBar) destBar.style.display = 'none';
+  if (tabBar) tabBar.classList.remove('visible');
   const inp = document.getElementById('travelQueryInput');
   if (inp) { inp.value = ''; inp.focus(); }
   stopTravelMediaAndSpeech();
@@ -2509,7 +2762,13 @@ function travelBackOrClose() {
     travelShowingResults = false;
     document.getElementById('travelSearchView').classList.remove('travel-result-hidden');
     document.getElementById('travelResultView').classList.add('travel-result-hidden');
-    document.getElementById('travelHeaderTitle').textContent = t('travelSearchTitle');
+    // restore search-state header
+    const titleEl = document.getElementById('travelHeaderTitle');
+    const destBar = document.getElementById('travelDestBar');
+    const tabBar = document.getElementById('travelTabBar');
+    if (titleEl) { titleEl.style.display = ''; titleEl.textContent = t('travelSearchTitle'); }
+    if (destBar) destBar.style.display = 'none';
+    if (tabBar) tabBar.classList.remove('visible');
     stopTravelMediaAndSpeech();
     const scroll = document.getElementById('travelScroll');
     if (scroll) scroll.scrollTop = 0;
