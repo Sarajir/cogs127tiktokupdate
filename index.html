@@ -955,30 +955,39 @@
       font-size: 17px;
       font-weight: 700;
     }
-    /* destination name shown as a search-bar pill */
+    /* "Traveling Tips [Destination]" pill header (Figma style) */
     .travel-dest-bar {
       flex: 1;
       display: flex;
       align-items: center;
-      background: #1c1c1c;
-      border-radius: 12px;
-      padding: 10px 14px;
       gap: 8px;
     }
+    .travel-dest-label {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
     .travel-dest-name {
-      flex: 1;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
       color: #fff;
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 999px;
+      padding: 4px 12px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 140px;
     }
     .travel-dest-search-icon {
+      margin-left: auto;
       font-size: 17px;
-      color: rgba(255,255,255,.65);
+      color: rgba(255,255,255,.7);
       cursor: pointer;
       flex-shrink: 0;
+      padding: 4px;
     }
     /* tab bar */
     .travel-tab-bar {
@@ -1057,6 +1066,13 @@
       font-size: 15px;
       color: rgba(255,255,255,.6);
     }
+    /* condensed state (after scrolling into grid): only show selected chips */
+    .travel-result-chips.condensed { gap: 0; }
+    .travel-result-chips.condensed .travel-chip-row { flex-wrap: nowrap; }
+    .travel-result-chips.condensed .travel-cat-chip:not(.active):not(.plus-chip) {
+      display: none;
+    }
+    .travel-result-chips.condensed #travelChipRow2 { margin-top: 7px; }
     /* 2×2 video grid */
     .travel-video-grid {
       display: grid;
@@ -1086,6 +1102,117 @@
       padding: 2px 6px;
       border-radius: 4px;
     }
+    /* inline written-summary shortcut above grid (tap to expand guide) */
+    .travel-grid-summary {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 10px 14px 0;
+      font-size: 13px;
+      line-height: 1.45;
+      color: rgba(255,255,255,.7);
+      cursor: pointer;
+    }
+    .travel-grid-summary .gs-icon {
+      flex-shrink: 0;
+      font-size: 14px;
+      margin-top: 1px;
+    }
+    .travel-grid-summary .gs-text {
+      flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .travel-grid-summary .gs-more {
+      color: rgba(255,255,255,.5);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    /* full-screen travel video player (tap a grid cell) */
+    .travel-video-layer {
+      position: fixed;
+      inset: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 420px;
+      z-index: 900;
+      background: #000;
+      display: none;
+    }
+    .travel-video-layer.open { display: block; }
+    .travel-video-layer video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+    .tv-back {
+      position: absolute;
+      top: 46px; left: 14px;
+      z-index: 5;
+      font-size: 26px;
+      color: #fff;
+      cursor: pointer;
+      text-shadow: 0 1px 4px rgba(0,0,0,.6);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tv-rail {
+      position: absolute;
+      right: 12px;
+      bottom: 120px;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      color: #fff;
+    }
+    .tv-rail .rail-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      text-shadow: 0 1px 4px rgba(0,0,0,.6);
+    }
+    .tv-rail .rail-icon { font-size: 30px; }
+    .tv-caption {
+      position: absolute;
+      left: 14px; right: 80px;
+      bottom: 90px;
+      z-index: 5;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.4;
+      text-shadow: 0 1px 4px rgba(0,0,0,.7);
+    }
+    .tv-caption .tv-sub {
+      margin-top: 6px;
+      font-size: 13px;
+      color: rgba(37,244,238,.95);
+      display: none;
+    }
+    .tv-caption .tv-sub.show { display: block; }
+    .tv-progress {
+      position: absolute;
+      left: 14px; right: 14px;
+      bottom: 70px;
+      z-index: 5;
+      display: flex;
+      gap: 4px;
+    }
+    .tv-progress .tv-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.35);
+    }
+    .tv-progress .tv-dot.active { background: #fff; }
     .travel-scroll {
       flex: 1;
       overflow-y: auto;
@@ -1592,9 +1719,10 @@
       <div class="travel-back" id="travelBackBtn" onclick="travelBackOrClose()" title="">‹</div>
       <!-- search state: plain title -->
       <div class="travel-title" id="travelHeaderTitle" data-i18n="travelSearchTitle">Search</div>
-      <!-- result state: destination name bar (hidden until result shown) -->
+      <!-- result state: "Traveling Tips [Destination]" pill header (hidden until result shown) -->
       <div class="travel-dest-bar" id="travelDestBar" style="display:none;">
-        <div class="travel-dest-name" id="travelDestName">—</div>
+        <span class="travel-dest-label" data-i18n="travelTipsLabel">Traveling Tips</span>
+        <span class="travel-dest-name" id="travelDestName">—</span>
         <div class="travel-dest-search-icon" onclick="travelBackOrClose()">🔍</div>
       </div>
     </div>
@@ -1657,6 +1785,12 @@
           <div class="travel-chip-row" id="travelChipRow1"></div>
           <div class="travel-chip-row" id="travelChipRow2"></div>
         </div>
+        <!-- inline written-summary shortcut (tap to jump to Trip Guide text) -->
+        <div class="travel-grid-summary" id="travelGridSummary" onclick="expandTravelGuide(true)">
+          <span class="gs-icon">🔍</span>
+          <span class="gs-text" id="travelGridSummaryText"></span>
+          <span class="gs-more" data-i18n="travelMore">more</span>
+        </div>
         <!-- 2×2 video grid -->
         <div class="travel-video-grid" id="travelVideoGrid"></div>
         <!-- hidden elements kept for backward-compat with JS -->
@@ -1671,6 +1805,22 @@
           <div id="travelRelatedList"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Full-screen travel video player (tap a grid cell) -->
+  <div class="travel-video-layer" id="travelVideoLayer" aria-hidden="true">
+    <video id="travelVideoPlayer" playsinline loop></video>
+    <div class="tv-back" onclick="closeTravelVideo()">‹</div>
+    <div class="tv-progress" id="tvProgress"></div>
+    <div class="tv-caption">
+      <div id="tvCaptionText"></div>
+      <div class="tv-sub" id="tvSubText"></div>
+    </div>
+    <div class="tv-rail">
+      <div class="rail-item"><div class="rail-icon">♡</div><span>3.2k</span></div>
+      <div class="rail-item"><div class="rail-icon">💬</div><span>128</span></div>
+      <div class="rail-item"><div class="rail-icon">↗</div><span>Share</span></div>
     </div>
   </div>
 
@@ -1949,11 +2099,13 @@ const STRINGS = {
     travelSubEn: 'English',
     travelSubZh: '中文',
     travelSubJa: '日本語',
-    travelGuideTitle: 'Trip guide',
-    travelListen: 'Listen',
+    travelGuideTitle: 'Trip Guide',
+    travelTipsLabel: 'Traveling Tips',
+    travelMore: 'more',
+    travelListen: 'Audio',
     travelPause: 'Pause',
     travelSecOverview: 'Quick overview',
-    travelSecBeforeTrip: 'Before you go · prep',
+    travelSecBeforeTrip: 'Before you go',
     travelSecBeforeArrival: 'Before arrival · good to know',
     travelSecAfterArrival: 'After arrival · on the ground',
     travelFeaturedLabel: 'Intro pick',
@@ -2064,10 +2216,12 @@ const STRINGS = {
     travelSubZh: '中文',
     travelSubJa: '日本語',
     travelGuideTitle: '行程指南',
-    travelListen: '收听',
+    travelTipsLabel: '旅行贴士',
+    travelMore: '更多',
+    travelListen: '语音',
     travelPause: '暂停',
     travelSecOverview: '快速了解',
-    travelSecBeforeTrip: '出发前 · 准备',
+    travelSecBeforeTrip: '出发前',
     travelSecBeforeArrival: '抵达前 · 须知',
     travelSecAfterArrival: '落地后 · 在目的地',
     travelFeaturedLabel: '精选介绍',
@@ -2407,6 +2561,8 @@ let travelShowingResults = false;
 let travelLastQuery = '';
 let travelVoicePlaying = false;
 let travelCurrentPayload = null;
+let travelGridVideos = [];   // video list backing the 2×2 grid + full-screen player
+let travelVideoIndex = 0;    // currently open full-screen travel video
 
 function resolveTravelDestinationKey(q) {
   const s = String(q || '').trim().toLowerCase();
@@ -2567,10 +2723,18 @@ function switchTravelTab(el) {
   el.classList.add('active');
 }
 
-function expandTravelGuide() {
+function expandTravelGuide(scrollToTop) {
   const expanded = document.getElementById('travelGuideExpanded');
   const moreRow = document.getElementById('travelGuideMoreRow');
   if (!expanded) return;
+  // when triggered from the inline summary shortcut, always expand + jump up
+  if (scrollToTop === true) {
+    expanded.style.display = 'block';
+    if (moreRow) moreRow.style.display = 'none';
+    const scroll = document.getElementById('travelScroll');
+    if (scroll) scroll.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
   if (expanded.style.display === 'none') {
     expanded.style.display = 'block';
     if (moreRow) moreRow.style.display = 'none';
@@ -2611,6 +2775,53 @@ function addCustomChip() {
   row2.insertBefore(btn, plusBtn);
 }
 
+/* ── Full-screen travel video player (tap a grid cell) ── */
+function openTravelVideo(index) {
+  const layer = document.getElementById('travelVideoLayer');
+  const player = document.getElementById('travelVideoPlayer');
+  if (!layer || !player || !travelGridVideos.length) return;
+  travelVideoIndex = index;
+  const r = travelGridVideos[index];
+  player.src = r.src;
+  player.muted = false;
+  player.play().catch(() => {});
+  // caption + subtitle
+  const loc = appLocale === 'zh' ? 'zh' : 'en';
+  const cap = (r[loc] && r[loc].cap) ? r[loc].cap : (r.en && r.en.cap) || '';
+  document.getElementById('tvCaptionText').textContent = cap;
+  applyTravelVideoSubtitle();
+  // progress dots
+  const prog = document.getElementById('tvProgress');
+  if (prog) {
+    prog.innerHTML = travelGridVideos.map((_, i) =>
+      '<div class="tv-dot' + (i === index ? ' active' : '') + '"></div>').join('');
+  }
+  layer.classList.add('open');
+  layer.setAttribute('aria-hidden', 'false');
+}
+
+function applyTravelVideoSubtitle() {
+  const sel = document.getElementById('travelSubtitleLang');
+  const lang = sel ? sel.value : 'off';
+  const sub = document.getElementById('tvSubText');
+  const r = travelGridVideos[travelVideoIndex];
+  if (!sub || !r) return;
+  if (lang === 'off' || !r.dub) {
+    sub.classList.remove('show');
+    sub.textContent = '';
+    return;
+  }
+  sub.textContent = r.dub[lang] || t('travelSubDemo');
+  sub.classList.add('show');
+}
+
+function closeTravelVideo() {
+  const layer = document.getElementById('travelVideoLayer');
+  const player = document.getElementById('travelVideoPlayer');
+  if (player) { try { player.pause(); player.removeAttribute('src'); player.load(); } catch (e) {} }
+  if (layer) { layer.classList.remove('open'); layer.setAttribute('aria-hidden', 'true'); }
+}
+
 function renderTravelDestination(query, opts) {
   const keepSubtitle = opts && opts.keepSubtitle;
   travelLastQuery = String(query || '').trim();
@@ -2645,6 +2856,14 @@ function renderTravelDestination(query, opts) {
   travelFillList(document.getElementById('travelListBeforeArrival'), c.beforeArrival);
   travelFillList(document.getElementById('travelListAfterArrival'), c.afterArrival);
 
+  // inline written-summary shortcut text (condensed overview)
+  const sumText = document.getElementById('travelGridSummaryText');
+  if (sumText) sumText.textContent = c.overview;
+
+  // reset condensed-chip scroll state
+  const chipsWrap = document.getElementById('travelResultChips');
+  if (chipsWrap) chipsWrap.classList.remove('condensed');
+
   // keep featured video src for compat
   const fv = document.getElementById('travelFeaturedVideo');
   stopTravelMediaAndSpeech();
@@ -2653,22 +2872,24 @@ function renderTravelDestination(query, opts) {
   // build chips
   buildResultChips();
 
-  // build 2×2 video grid
+  // build the grid + remember the video list for the full-screen player
+  const loc = appLocale === 'zh' ? 'zh' : 'en';
+  // grid often shows more cells than data items — repeat the related list to fill 6
+  const base = (payload.related || []);
+  travelGridVideos = [];
+  for (let i = 0; i < Math.max(6, base.length); i++) {
+    travelGridVideos.push(base[i % base.length]);
+  }
   const grid = document.getElementById('travelVideoGrid');
   if (grid) {
     grid.innerHTML = '';
-    const loc = appLocale === 'zh' ? 'zh' : 'en';
-    (payload.related || []).forEach(r => {
-      const cap = (r[loc] && r[loc].cap) ? r[loc].cap : (r.en && r.en.cap) || '';
+    travelGridVideos.forEach((r, idx) => {
       const tagKey = r.tag === 'local' ? 'travelTagLocal' : 'travelTagTips';
       const cell = document.createElement('div');
       cell.className = 'travel-grid-cell';
       cell.innerHTML = '<video playsinline muted loop autoplay src="' + r.src + '"></video>' +
         '<div class="grid-tag">' + t(tagKey) + '</div>';
-      cell.addEventListener('click', () => {
-        const v = cell.querySelector('video');
-        if (v) { v.muted = false; v.play().catch(() => {}); }
-      });
+      cell.addEventListener('click', () => openTravelVideo(idx));
       grid.appendChild(cell);
     });
   }
@@ -4434,6 +4655,21 @@ function addEmojiReaction(emoji) {
   input.value += emoji;
   input.focus();
 }
+
+/* ═══════════════════════════════════════════════════
+   TRAVEL: condense chips once user scrolls into the grid
+═══════════════════════════════════════════════════ */
+(function initTravelScrollCondense() {
+  const scroll = document.getElementById('travelScroll');
+  if (!scroll) return;
+  scroll.addEventListener('scroll', () => {
+    if (!travelShowingResults) return;
+    const chips = document.getElementById('travelResultChips');
+    if (!chips) return;
+    // once scrolled past the Trip Guide card, collapse chips to selected-only
+    chips.classList.toggle('condensed', scroll.scrollTop > 180);
+  }, { passive: true });
+})();
 </script>
 </body>
 </html>
