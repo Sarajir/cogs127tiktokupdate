@@ -182,6 +182,11 @@
       display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
     .video-bg video { width: 100%; height: 100%; object-fit: cover; }
+    .feed-real-video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
     .video-placeholder {
       width: 100%; height: 100%;
       background: var(--bg);
@@ -1834,6 +1839,7 @@
 ═══════════════════════════════════════════════════ */
 const mainVideos = [
   { id:'m1', bg:'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)', emoji:'🌊',
+    videoSrc:'https://download.samplelib.com/mp4/sample-10s.mp4',
     user:'@ocean_vibes', avatar:'🌊', avatarBg:'linear-gradient(135deg,#667eea,#764ba2)',
     desc:'Late-night waves are so healing 🌙 #nightvibes #ocean',
     descZh:'深夜海浪太治愈了 🌙 #夜拍 #海洋',
@@ -1841,6 +1847,7 @@ const mainVideos = [
     likes:'324k', comments:4218, bookmarks:'18.2k', shares:'12k',
     location:'Malibu Beach', locationCount:'5,231' },
   { id:'m2', bg:'linear-gradient(135deg,#f093fb,#f5576c,#4facfe)', emoji:'🌸',
+    videoSrc:'https://download.samplelib.com/mp4/sample-15s.mp4',
     user:'@sakura_daily', avatar:'🌸', avatarBg:'linear-gradient(135deg,#f093fb,#f5576c)',
     desc:'Kyoto cherry season — I come every year 📷✨ #japan #sakura',
     descZh:'京都樱花季，每年都来 📷✨ #日本 #樱花',
@@ -1848,6 +1855,7 @@ const mainVideos = [
     likes:'881k', comments:9832, bookmarks:'72.7k', shares:'56k',
     location:'Maruyama Park · Kyoto', locationCount:'14,880' },
   { id:'m3', bg:'linear-gradient(135deg,#43e97b,#38f9d7)', emoji:'🍜',
+    videoSrc:'https://download.samplelib.com/mp4/sample-20s.mp4',
     user:'@foodie_life', avatar:'🍜', avatarBg:'linear-gradient(135deg,#43e97b,#38f9d7)',
     desc:'Hand-pulled noodles at home — full recipe below 👇 #food #cooking',
     descZh:'在家手拉面，完整食谱见下方 👇 #美食 #料理',
@@ -1855,6 +1863,7 @@ const mainVideos = [
     likes:'217k', comments:3301, bookmarks:'41.5k', shares:'89k',
     location:'Home Kitchen', locationCount:'2,104' },
   { id:'m4', bg:'linear-gradient(135deg,#fa709a,#fee140)', emoji:'🐱',
+    videoSrc:'https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4',
     user:'@catworld_zzz', avatar:'🐱', avatarBg:'linear-gradient(135deg,#fa709a,#fee140)',
     desc:'My orange cat found the snacks 🍪😂 #cats #orangecat',
     descZh:'我家橘猫偷吃零食 🍪😂 #猫 #橘猫',
@@ -1862,6 +1871,7 @@ const mainVideos = [
     likes:'1.56M', comments:24100, bookmarks:'132k', shares:'120k',
     location:'Living Room', locationCount:'9,110' },
   { id:'m5', bg:'linear-gradient(135deg,#4facfe,#00f2fe)', emoji:'🏔️',
+    videoSrc:'https://media.w3.org/2010/05/sintel/trailer.mp4',
     user:'@mountain_trek', avatar:'🏔️', avatarBg:'linear-gradient(135deg,#4facfe,#00f2fe)',
     desc:'4800m — clouds under my feet ⛰️🌤️ #hiking #tibet',
     descZh:'海拔4800米，脚下云海 ⛰️🌤️ #徒步 #高原',
@@ -2593,11 +2603,41 @@ function travelPhotoKeyword(payload) {
   return title.toLowerCase().replace(/\s+/g, ',');
 }
 
-/* Stable topical photo URL per destination+category+index */
-function travelPhotoURL(photoKw, cat, idx) {
-  const kw = encodeURIComponent(photoKw + ',' + (TRAVEL_CAT_KW[cat] || 'travel'));
-  const lock = travelHash(photoKw + cat) % 900 + idx + 1;
+/* Category chip label → extra photo keyword (acts like an added search term) */
+const TRAVEL_CHIP_KW = {
+  'Street Food': 'street food', 'Locations': 'landmark', 'Night Market': 'night market',
+  'Landmark': 'monument', 'Budget': 'market', 'Activity': 'activity',
+  'Pop-up': 'popup store', 'Festival': 'festival', 'Vibe': 'aesthetic',
+};
+
+/* Keywords of currently-selected chips (acts as added search terms) */
+function getActiveChipKeywords() {
+  const out = [];
+  document.querySelectorAll('#travelResultChips .travel-cat-chip.active').forEach(b => {
+    if (b.classList.contains('plus-chip')) return;
+    const label = b.textContent.replace(/^\+\s*/, '').trim();
+    out.push(TRAVEL_CHIP_KW[label] || label.toLowerCase());
+  });
+  return out;
+}
+
+function travelFirstWord(s) { return String(s).split(/[,\s]+/)[0]; }
+
+/* Stable topical photo URL — capped at 3 clean single-word tags so LoremFlickr
+   never 403s. Selected chips fold into the keyword AND the lock seed, so
+   toggling a chip visibly changes the grid. */
+function travelPhotoURL(photoKw, cat, idx, chipKws) {
+  chipKws = chipKws || [];
+  const tags = [travelFirstWord(photoKw), travelFirstWord(TRAVEL_CAT_KW[cat] || 'travel')];
+  if (chipKws.length) tags.push(travelFirstWord(chipKws[chipKws.length - 1]));
+  const kw = encodeURIComponent(tags.join(','));
+  const lock = travelHash(photoKw + cat + chipKws.join(',')) % 900 + idx + 1;
   return 'https://loremflickr.com/360/450/' + kw + '?lock=' + lock;
+}
+
+/* Simple dest-only fallback if a topical combo returns no image */
+function travelPhotoFallback(photoKw, idx) {
+  return 'https://loremflickr.com/360/450/' + encodeURIComponent(travelFirstWord(photoKw)) + '?lock=' + (idx + 1);
 }
 
 /* Category intro line — differs by destination AND category */
@@ -2841,6 +2881,8 @@ function buildResultChips() {
 
 function toggleResultChip(el) {
   el.classList.toggle('active');
+  // a chip acts like an added search keyword → refresh the grid below
+  if (travelShowingResults) renderTravelCategory();
 }
 
 function addCustomChip() {
@@ -2854,6 +2896,7 @@ function addCustomChip() {
   btn.textContent = '+ ' + name;
   btn.onclick = () => toggleResultChip(btn);
   row2.insertBefore(btn, plusBtn);
+  if (travelShowingResults) renderTravelCategory();
 }
 
 /* ── Full-screen photo viewer (tap a grid cell) ── */
@@ -2863,6 +2906,7 @@ function openTravelVideo(index) {
   if (!layer || !img || !travelGridVideos.length) return;
   travelVideoIndex = index;
   const r = travelGridVideos[index];
+  img.onerror = function () { this.onerror = null; if (r.fallback) this.src = r.fallback; };
   img.src = r.img;
   document.getElementById('tvCaptionText').textContent = r.cap || '';
   // progress dots
@@ -2944,11 +2988,13 @@ function renderTravelCategory() {
   const sumText = document.getElementById('travelGridSummaryText');
   if (sumText) sumText.textContent = travelCatIntro(title, cat, loc);
 
-  // build 6 topical photos for this destination + category
+  // build 6 topical photos for this destination + category + selected chips
+  const chipKws = getActiveChipKeywords();
   travelGridVideos = [];
   for (let i = 0; i < 6; i++) {
     travelGridVideos.push({
-      img: travelPhotoURL(photoKw, cat, i),
+      img: travelPhotoURL(photoKw, cat, i, chipKws),
+      fallback: travelPhotoFallback(photoKw, i),
       cap: travelPhotoCaption(title, cat, i, loc),
       tag: i % 2 === 0 ? 'local' : 'tips',
     });
@@ -2960,8 +3006,16 @@ function renderTravelCategory() {
       const tagKey = r.tag === 'local' ? 'travelTagLocal' : 'travelTagTips';
       const cell = document.createElement('div');
       cell.className = 'travel-grid-cell';
-      cell.innerHTML = '<img loading="lazy" src="' + r.img + '" alt="">' +
-        '<div class="grid-tag">' + t(tagKey) + '</div>';
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.src = r.img;
+      img.alt = '';
+      img.onerror = function () { this.onerror = null; this.src = r.fallback; };
+      cell.appendChild(img);
+      const tag = document.createElement('div');
+      tag.className = 'grid-tag';
+      tag.textContent = t(tagKey);
+      cell.appendChild(tag);
       cell.addEventListener('click', () => openTravelVideo(idx));
       grid.appendChild(cell);
     });
@@ -3176,6 +3230,7 @@ function buildFeed(containerId, videoList) {
     card.innerHTML = `
       <div class="video-bg">
         <div class="video-placeholder" style="--bg:${v.bg}">${v.emoji}</div>
+        ${v.videoSrc ? `<video class="feed-real-video" src="${v.videoSrc}" autoplay muted loop playsinline preload="metadata"></video>` : ''}
       </div>
       <div class="play-overlay" id="overlay-${v.id}"><div class="play-icon">⏸</div></div>
       <div class="heart-burst" id="heart-${v.id}">❤️</div>
