@@ -1088,7 +1088,8 @@
       position: relative;
       cursor: pointer;
     }
-    .travel-grid-cell video {
+    .travel-grid-cell video,
+    .travel-grid-cell img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
@@ -1143,7 +1144,8 @@
       display: none;
     }
     .travel-video-layer.open { display: block; }
-    .travel-video-layer video {
+    .travel-video-layer video,
+    .travel-video-layer img {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -1808,14 +1810,13 @@
     </div>
   </div>
 
-  <!-- Full-screen travel video player (tap a grid cell) -->
+  <!-- Full-screen photo viewer (tap a grid cell) -->
   <div class="travel-video-layer" id="travelVideoLayer" aria-hidden="true">
-    <video id="travelVideoPlayer" playsinline loop></video>
+    <img id="travelVideoImg" alt="" />
     <div class="tv-back" onclick="closeTravelVideo()">‹</div>
     <div class="tv-progress" id="tvProgress"></div>
     <div class="tv-caption">
       <div id="tvCaptionText"></div>
-      <div class="tv-sub" id="tvSubText"></div>
     </div>
     <div class="tv-rail">
       <div class="rail-item"><div class="rail-icon">♡</div><span>3.2k</span></div>
@@ -2561,8 +2562,83 @@ let travelShowingResults = false;
 let travelLastQuery = '';
 let travelVoicePlaying = false;
 let travelCurrentPayload = null;
-let travelGridVideos = [];   // video list backing the 2×2 grid + full-screen player
-let travelVideoIndex = 0;    // currently open full-screen travel video
+let travelGridVideos = [];   // media list backing the 2×2 grid + full-screen player
+let travelVideoIndex = 0;    // currently open full-screen item
+let currentTravelCategory = 'location'; // Location / Activity / Food / Transport
+
+/* ── Per-category photo keywords (appended to a destination keyword) ── */
+const TRAVEL_CAT_KW = {
+  location: 'landmark,cityscape',
+  activity: 'travel,sightseeing',
+  food: 'food,cuisine',
+  transport: 'train,station',
+};
+/* Destination → photo search keyword for LoremFlickr (topical photos) */
+const TRAVEL_PHOTO_KW = {
+  japan: 'japan,tokyo', korea: 'korea,seoul', france: 'france,paris',
+  china: 'china,beijing', thailand: 'thailand,bangkok', uk: 'london,england',
+  australia: 'australia,sydney', italy: 'italy,rome',
+};
+
+function travelHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) | 0; }
+  return Math.abs(h);
+}
+
+/* Destination keyword: known id → curated; generic → derive from title */
+function travelPhotoKeyword(payload) {
+  if (payload && TRAVEL_PHOTO_KW[payload.id]) return TRAVEL_PHOTO_KW[payload.id];
+  const title = (payload && payload.copy && payload.copy.title) ? payload.copy.title : 'travel';
+  return title.toLowerCase().replace(/\s+/g, ',');
+}
+
+/* Stable topical photo URL per destination+category+index */
+function travelPhotoURL(photoKw, cat, idx) {
+  const kw = encodeURIComponent(photoKw + ',' + (TRAVEL_CAT_KW[cat] || 'travel'));
+  const lock = travelHash(photoKw + cat) % 900 + idx + 1;
+  return 'https://loremflickr.com/360/450/' + kw + '?lock=' + lock;
+}
+
+/* Category intro line — differs by destination AND category */
+function travelCatIntro(title, cat, loc) {
+  const map = {
+    location: {
+      en: 'Where to go first in ' + title + ': must-see neighborhoods, landmarks, and views worth the detour.',
+      zh: title + '先去哪：必看街区、地标，以及值得绕路的风景。',
+    },
+    activity: {
+      en: 'Things to actually do in ' + title + ' — experiences locals and students recommend.',
+      zh: '在' + title + '真正值得做的事——当地人和留学生都推荐的体验。',
+    },
+    food: {
+      en: 'What to eat in ' + title + ': street food, local staples, and where to find them.',
+      zh: title + '吃什么：街头小吃、地道主食，以及去哪儿找。',
+    },
+    transport: {
+      en: 'Getting around ' + title + ': transit cards, apps, and the routes newcomers ask about most.',
+      zh: '在' + title + '怎么出行：交通卡、常用应用，以及新手最常问的路线。',
+    },
+  };
+  return (map[cat] || map.location)[loc === 'zh' ? 'zh' : 'en'];
+}
+
+/* Per-photo caption — topical, differs by category */
+function travelPhotoCaption(title, cat, idx, loc) {
+  const zh = loc === 'zh';
+  const labels = {
+    location: zh ? ['必看地标', '热门街区', '观景点', '老城漫步', '城市天际线', '隐藏角落']
+                 : ['Must-see landmark', 'Popular neighborhood', 'Best viewpoint', 'Old town walk', 'City skyline', 'Hidden corner'],
+    activity: zh ? ['本地体验', '一日行程', '周末玩法', '文化活动', '夜生活', '户外探索']
+                 : ['Local experience', 'Day-trip idea', 'Weekend plan', 'Cultural event', 'Nightlife pick', 'Outdoor adventure'],
+    food: zh ? ['街头小吃', '必吃餐厅', '当地早餐', '夜市美食', '甜点推荐', '人均预算']
+             : ['Street food', 'Must-try restaurant', 'Local breakfast', 'Night-market eats', 'Dessert pick', 'Budget meal'],
+    transport: zh ? ['交通卡攻略', '机场到市区', '地铁路线', '城际出行', '打车提示', '夜间交通']
+                  : ['Transit card guide', 'Airport to city', 'Metro routes', 'Intercity travel', 'Taxi tips', 'Late-night transport'],
+  };
+  const arr = labels[cat] || labels.location;
+  return arr[idx % arr.length] + ' · ' + title;
+}
 
 function resolveTravelDestinationKey(q) {
   const s = String(q || '').trim().toLowerCase();
@@ -2721,6 +2797,11 @@ function onTravelSubtitleChange() {
 function switchTravelTab(el) {
   document.querySelectorAll('.travel-tab-item').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
+  currentTravelCategory = el.getAttribute('data-tab') || 'location';
+  renderTravelCategory();
+  // scroll up a touch so the user sees the new intro + grid
+  const scroll = document.getElementById('travelScroll');
+  if (scroll && scroll.scrollTop > 240) scroll.scrollTo({ top: 200, behavior: 'smooth' });
 }
 
 function expandTravelGuide(scrollToTop) {
@@ -2775,21 +2856,15 @@ function addCustomChip() {
   row2.insertBefore(btn, plusBtn);
 }
 
-/* ── Full-screen travel video player (tap a grid cell) ── */
+/* ── Full-screen photo viewer (tap a grid cell) ── */
 function openTravelVideo(index) {
   const layer = document.getElementById('travelVideoLayer');
-  const player = document.getElementById('travelVideoPlayer');
-  if (!layer || !player || !travelGridVideos.length) return;
+  const img = document.getElementById('travelVideoImg');
+  if (!layer || !img || !travelGridVideos.length) return;
   travelVideoIndex = index;
   const r = travelGridVideos[index];
-  player.src = r.src;
-  player.muted = false;
-  player.play().catch(() => {});
-  // caption + subtitle
-  const loc = appLocale === 'zh' ? 'zh' : 'en';
-  const cap = (r[loc] && r[loc].cap) ? r[loc].cap : (r.en && r.en.cap) || '';
-  document.getElementById('tvCaptionText').textContent = cap;
-  applyTravelVideoSubtitle();
+  img.src = r.img;
+  document.getElementById('tvCaptionText').textContent = r.cap || '';
   // progress dots
   const prog = document.getElementById('tvProgress');
   if (prog) {
@@ -2800,25 +2875,8 @@ function openTravelVideo(index) {
   layer.setAttribute('aria-hidden', 'false');
 }
 
-function applyTravelVideoSubtitle() {
-  const sel = document.getElementById('travelSubtitleLang');
-  const lang = sel ? sel.value : 'off';
-  const sub = document.getElementById('tvSubText');
-  const r = travelGridVideos[travelVideoIndex];
-  if (!sub || !r) return;
-  if (lang === 'off' || !r.dub) {
-    sub.classList.remove('show');
-    sub.textContent = '';
-    return;
-  }
-  sub.textContent = r.dub[lang] || t('travelSubDemo');
-  sub.classList.add('show');
-}
-
 function closeTravelVideo() {
   const layer = document.getElementById('travelVideoLayer');
-  const player = document.getElementById('travelVideoPlayer');
-  if (player) { try { player.pause(); player.removeAttribute('src'); player.load(); } catch (e) {} }
   if (layer) { layer.classList.remove('open'); layer.setAttribute('aria-hidden', 'true'); }
 }
 
@@ -2856,29 +2914,44 @@ function renderTravelDestination(query, opts) {
   travelFillList(document.getElementById('travelListBeforeArrival'), c.beforeArrival);
   travelFillList(document.getElementById('travelListAfterArrival'), c.afterArrival);
 
-  // inline written-summary shortcut text (condensed overview)
-  const sumText = document.getElementById('travelGridSummaryText');
-  if (sumText) sumText.textContent = c.overview;
-
   // reset condensed-chip scroll state
   const chipsWrap = document.getElementById('travelResultChips');
   if (chipsWrap) chipsWrap.classList.remove('condensed');
 
-  // keep featured video src for compat
-  const fv = document.getElementById('travelFeaturedVideo');
   stopTravelMediaAndSpeech();
-  if (fv) { fv.src = payload.featured; }
 
   // build chips
   buildResultChips();
 
-  // build the grid + remember the video list for the full-screen player
+  // reset to first tab (Location) and render its photos + intro
+  currentTravelCategory = 'location';
+  document.querySelectorAll('.travel-tab-item').forEach(tab => {
+    tab.classList.toggle('active', tab.getAttribute('data-tab') === 'location');
+  });
+  renderTravelCategory();
+}
+
+/* Render the grid + intro line for the active category of the current destination */
+function renderTravelCategory() {
+  const payload = travelCurrentPayload;
+  if (!payload) return;
   const loc = appLocale === 'zh' ? 'zh' : 'en';
-  // grid often shows more cells than data items — repeat the related list to fill 6
-  const base = (payload.related || []);
+  const title = payload.copy.title;
+  const cat = currentTravelCategory;
+  const photoKw = travelPhotoKeyword(payload);
+
+  // category intro replaces the inline summary line
+  const sumText = document.getElementById('travelGridSummaryText');
+  if (sumText) sumText.textContent = travelCatIntro(title, cat, loc);
+
+  // build 6 topical photos for this destination + category
   travelGridVideos = [];
-  for (let i = 0; i < Math.max(6, base.length); i++) {
-    travelGridVideos.push(base[i % base.length]);
+  for (let i = 0; i < 6; i++) {
+    travelGridVideos.push({
+      img: travelPhotoURL(photoKw, cat, i),
+      cap: travelPhotoCaption(title, cat, i, loc),
+      tag: i % 2 === 0 ? 'local' : 'tips',
+    });
   }
   const grid = document.getElementById('travelVideoGrid');
   if (grid) {
@@ -2887,33 +2960,12 @@ function renderTravelDestination(query, opts) {
       const tagKey = r.tag === 'local' ? 'travelTagLocal' : 'travelTagTips';
       const cell = document.createElement('div');
       cell.className = 'travel-grid-cell';
-      cell.innerHTML = '<video playsinline muted loop autoplay src="' + r.src + '"></video>' +
+      cell.innerHTML = '<img loading="lazy" src="' + r.img + '" alt="">' +
         '<div class="grid-tag">' + t(tagKey) + '</div>';
       cell.addEventListener('click', () => openTravelVideo(idx));
       grid.appendChild(cell);
     });
   }
-
-  // keep related list in sync for subtitle compat
-  const list = document.getElementById('travelRelatedList');
-  if (list) {
-    list.innerHTML = '';
-    (payload.related || []).forEach(r => {
-      const card = document.createElement('div');
-      card.className = 'travel-related-card';
-      card.setAttribute('data-dub', '1');
-      if (r.dub) {
-        card.setAttribute('data-dub-en', r.dub.en || '');
-        card.setAttribute('data-dub-zh', r.dub.zh || '');
-        card.setAttribute('data-dub-ja', r.dub.ja || '');
-      }
-      list.appendChild(card);
-    });
-  }
-
-  const subSel = document.getElementById('travelSubtitleLang');
-  if (subSel && !keepSubtitle) subSel.value = 'off';
-  onTravelSubtitleChange();
 }
 
 function buildTravelChips() {
